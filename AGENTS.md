@@ -277,3 +277,18 @@ position discontinuities in neighboring sampled frames; this is qualitative,
 not labelled accuracy. No threshold retuning.108 tests passed; separate42.57s
 fresh CPU2-thread smoke completed in29.951s. Keep cached phase sums distinct
 from new end-to-end timings and disclose the original404p limitation.
+
+Owner subsequently identified a missed rally/edit boundary around51s. Native
+frames confirm a position discontinuity at51.64s; do not present the previous4
+segments as complete. At sampled51.75s global adaptive_ratio2.81524 missed3.0
+(content3.92863 passed floor.5). Same-threshold left/lower70% regional detector
+ratio3.19515 recovers it; global+left+right yields4cuts/5segments. Global threshold
+2.8 also recovers it on this sample, so regional superiority is unproven.
+This is a separate diagnostic only, not a changed default or held-out evaluation.
+See docs/VISUAL_UNION_V2.md and outputs/demo_cut_seam_diagnostic_20261020/.
+
+Owner requested repository update after that diagnostic. Regional detection is
+now an opt-in source CLI profile: run_visual_union.ps1 -SceneProfile regional
+or --scene-profile regional. Keep global default and the published ZIP unchanged.
+Reuse one sampled decode for upstream full/left/right detectors, preserve regional
+provenance, reject cached profile mismatches. No fresh human accuracy claim.

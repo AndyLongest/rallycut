@@ -13,6 +13,7 @@ def write_union_review(result, destination):
         "video": url, "duration": result["video"]["duration_seconds"],
         "rallies": result["rallies"], "boundaries": result["boundaries"],
         "recovery": result["activity_recovery"],
+        "scene_profile": result.get("scene_profile", "global"),
     }, ensure_ascii=False).replace("<", "\\u003c")
     template = r'''<!doctype html><html lang="zh-CN"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -35,6 +36,7 @@ a{color:#71d4bc}.note{border-left:3px solid #f4ae48;padding-left:14px}
 </style><main>
 <h1>画面识别 + 剪辑候选 · 并集复核</h1>
 <p id="summary"></p>
+<p id="profile"></p>
 <div class="player"><video controls preload="metadata"></video><div id="badge"></div><div id="flash"></div></div>
 <canvas id="timeline"></canvas>
 <p>青色：动作支持的候选段；橙线：剪辑候选。点击时间轴跳转，下面的按钮从切点前 2 秒播放。</p>
@@ -45,6 +47,9 @@ a{color:#71d4bc}.note{border-left:3px solid #f4ae48;padding-left:14px}
 </main><script>
 const D=__DATA__,v=document.querySelector('video'),c=document.querySelector('canvas'),ctx=c.getContext('2d');
 v.src=D.video;const cuts=D.boundaries.filter(b=>b.sources.includes('PySceneDetect'));
+document.querySelector('#profile').textContent=D.scene_profile==='regional'
+ ?'剪辑模式：全图 + 左右局部分区（实验）。快速跑动、遮挡、进出画面也可能触发，请复核切点。'
+ :'剪辑模式：原全图检测。';
 const fmt=t=>`${Math.floor(t/60)}:${(t%60).toFixed(2).padStart(5,'0')}`;
 document.querySelector('#summary').textContent=`原始最终结果 ${D.recovery.original_final_candidates} 段；保留 ${D.recovery.restored_candidates.length} 段被时长规则过滤的活动；加入 ${cuts.length} 个剪辑候选后，得到 ${D.rallies.length} 个动作候选段。`;
 for(const b of cuts){const el=document.createElement('button');el.textContent=`看切点 ${fmt(b.seconds)}`;el.onclick=()=>{v.currentTime=Math.max(0,b.seconds-2);v.play().catch(()=>{});};document.querySelector('#cuts').append(el);}

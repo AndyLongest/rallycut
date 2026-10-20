@@ -14,6 +14,7 @@ from rallycut.cli import save
 from rallycut.media import probe
 from rallycut.visual_union import recover_long_candidates, fuse_visual_activity
 from rallycut.union_review import write_union_review
+from rallycut.regional_scenes import analyze_regional_scenes, validate_scene_profile
 
 
 def main():
@@ -22,6 +23,8 @@ def main():
     parser.add_argument("video", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--mode", choices=["fast", "full"], default="fast")
+    parser.add_argument("--scene-profile", choices=["global", "regional"], default="global",
+                        help="regional adds fixed left/right regions; opt-in development profile")
     parser.add_argument("--upstream", type=Path, default=project/"outputs/upstream_rallyclip/RallyClip-main")
     parser.add_argument("--threads", type=int, default=2)
     parser.add_argument("--reuse-rallyclip", type=Path, help="Explicitly reuse a same-video capture directory")
@@ -69,16 +72,25 @@ def main():
             or abs(prediction["video"]["duration_seconds"]-meta["duration_seconds"]) > 1e-4):
         raise ValueError("Saved inference belongs to a different video")
     if not args.reuse_scenes:
-        run("scenes", [sys.executable, "-m", "rallycut.cli", "analyze", str(video),
-                      "--mode", "edited", "--fps", "4", "--width", "320",
-                      "--threads", str(args.threads), "--output", str(scene_dir)])
+        if args.scene_profile == "regional":
+            print("scenes (regional)", flush=True)
+            save(analyze_regional_scenes(meta, threads=args.threads), scene_dir)
+        else:
+            run("scenes", [sys.executable, "-m", "rallycut.cli", "analyze", str(video),
+                          "--mode", "edited", "--fps", "4", "--width", "320",
+                          "--threads", str(args.threads), "--output", str(scene_dir)])
     scenes = json.loads((scene_dir/"rallies.json").read_text(encoding="utf8"))
+    validate_scene_profile(scenes, args.scene_profile)
     capture = json.loads((pose_dir/"score_capture.json").read_text(encoding="utf8"))
     sys.path.insert(0, str(upstream/"src"))
     from infer import heatmap_decode
     with np.load(pose_dir/"model_scores.npz") as scores:
         activity = recover_long_candidates(prediction, scores, capture, heatmap_decode)
     result = fuse_visual_activity(activity, scenes, args.merge_tolerance)
+    result["scene_profile"] = args.scene_profile
+    result["scene_detection"] = scenes["visual_stats"]
+    if args.scene_profile == "regional":
+        result["limitations"].extend(scenes["limitations"])
     elapsed = time.perf_counter()-started
     save(activity, out/"activity")
     result["timings"]["current_invocation_analysis_seconds"] = elapsed

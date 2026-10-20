@@ -35,6 +35,8 @@
 ```powershell
 .\run_visual_union.ps1 -Video 'D:\training.mp4' -Output 'outputs\union_job' -Mode fast
 # -Mode full 使用完整 960 路线；两种模式均为 CPU，默认两线程。
+# 固定机位人物跳变补漏：全图 + 左右下部区域，实验性可选模式
+.\run_visual_union.ps1 -Video 'D:\training.mp4' -Output 'outputs\regional_job' -SceneProfile regional
 ```
 
 先保留模型支持的活动（包括原先因超过 60 秒而被删除的长段），再加入
@@ -45,6 +47,9 @@ PySceneDetect 剪辑候选；相邻异源边界在 1 秒内去重，保留来源
 **这是候选边界并集，不保证每处剪辑都是真实回合结束。** 不使用音频，
 不改变原模型权重；现有 Light ZIP 前端未更新。详见
 [并集实现与本次验证](docs/VISUAL_UNION_V2.md)。
+`-SceneProfile global` 为默认原全图检测；`regional` 保持相同阈值，
+额外检测左右下部70%区域，同一批抽帧共用一次视频解码，不增加人体模型。
+分区模式已补上开发视频约51秒的漏检，但尚未完成独立样本准确率验收。
 
 ## 已有实测
 

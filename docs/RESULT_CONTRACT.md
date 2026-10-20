@@ -86,3 +86,11 @@ CLI 与 UI 的外层结构不能混用，公共部分为 `rallies` 及区间语�
 `timings.cached_rallyclip/cached_scenes` 指明是否显式复用，
 `current_invocation_analysis_seconds` 才是本次调用计时；
 复用时不要把旧阶段时间相加当作新端到端测速。
+
+可选分区检测通过 `--scene-profile regional` 启用。
+`scene_profile` 为 `global` 或 `regional`，`scene_detection` 保留剪辑检测参数；
+分区模式另含 `region_cut_candidates_seconds` 和 `regions_normalized_xyxy`，
+便于追溯是全图、左下部还是右下部触发。区域坐标固定，不是人体追踪框。
+同一采样时刻多个区域触发只保留一个剪辑点。不同时间的区域候选不相互
+强行吸附，仍按既有并集规则与动作边界去重。
+明确复用场景结果时校验模式，不允许请求分区却悄悄读取旧全图缓存。
