@@ -1,0 +1,175 @@
+{
+  "reference_kind": "frozen_teacher_predictions_not_human_ground_truth",
+  "audio_used": false,
+  "threads": 2,
+  "server_benchmark": false,
+  "tests_passed": 98,
+  "cases": [
+    {
+      "case": "dev_short",
+      "teacher_file_sha256": "f1f4d1ee712f33bfc20cd09f9ca219bbd4f49ecf24cb179f4b72553fc305266b",
+      "student_file_sha256": "dd4d4e8998600ac80295492de209c60e5ec6665baa6a8aea94f736a21c63cf9b",
+      "duration": 70.966667,
+      "teacher_seconds": 32.5072954999996,
+      "fast_seconds": 16.800029400001222,
+      "speedup": 1.9349546793053372,
+      "ratio": 0.23673127272556313,
+      "agreement": {
+        "reference_kind": "frozen_model_teacher_not_human_truth",
+        "teacher_count": 3,
+        "student_count": 4,
+        "positive_reference_available": true,
+        "starts": {
+          "matched": 3,
+          "missing": 0,
+          "extra": 1,
+          "mean_error_seconds": 0.0036428737978837686,
+          "max_error_seconds": 0.006681904807621208
+        },
+        "ends": {
+          "matched": 3,
+          "missing": 0,
+          "extra": 1,
+          "mean_error_seconds": 0.009800654437242132,
+          "max_error_seconds": 0.025301285198522372
+        },
+        "active_time_iou": 0.9910313901345291,
+        "missed_teacher_active_seconds": 0.6000000000000001,
+        "extra_active_seconds": 0.0,
+        "boundary_tolerance_seconds": 1.0
+      },
+      "unmatched_teacher_ends": []
+    },
+    {
+      "case": "dev_long",
+      "teacher_file_sha256": "fdf332e56663f48a75de8d97de834bce9c5d0dd8f05bf955d26b92eb56943237",
+      "student_file_sha256": "044b3b1604c624bfefa58da847294c8af7fef8928ce1b543a08381bc9936534d",
+      "duration": 299.600053,
+      "teacher_seconds": 233.51905299999999,
+      "fast_seconds": 78.1467206999987,
+      "speedup": 2.9882130805778506,
+      "ratio": 0.26083680532592796,
+      "agreement": {
+        "reference_kind": "frozen_model_teacher_not_human_truth",
+        "teacher_count": 12,
+        "student_count": 11,
+        "positive_reference_available": true,
+        "starts": {
+          "matched": 11,
+          "missing": 1,
+          "extra": 0,
+          "mean_error_seconds": 0.1152849662835966,
+          "max_error_seconds": 0.2899351754495001
+        },
+        "ends": {
+          "matched": 11,
+          "missing": 1,
+          "extra": 0,
+          "mean_error_seconds": 0.14066245228596908,
+          "max_error_seconds": 0.8557716155586945
+        },
+        "active_time_iou": 0.9805914972273567,
+        "missed_teacher_active_seconds": 1.75,
+        "extra_active_seconds": 1.4000000000000001,
+        "boundary_tolerance_seconds": 1.0
+      },
+      "unmatched_teacher_ends": [
+        {
+          "index": 6,
+          "start_seconds": 140.0,
+          "end_seconds": 140.4,
+          "evidence": "upstream pretrained TCN from low-rate CPU pose features; no label input",
+          "needs_review": true,
+          "duration_seconds": 0.4000000000000057
+        }
+      ]
+    },
+    {
+      "case": "held_deemo1",
+      "teacher_file_sha256": "e48c833c983e728156eb61551eb2814dcf7b461785840e5598c23b44a5d0e0bf",
+      "student_file_sha256": "821224b36c030e3c220ca4fed420f82b8a16b680eb9e5bf3d10c072a867087fc",
+      "duration": 111.101,
+      "teacher_seconds": 86.48314300000129,
+      "fast_seconds": 41.12521779999952,
+      "speedup": 2.1029224312096484,
+      "ratio": 0.37016064481867417,
+      "agreement": {
+        "reference_kind": "frozen_model_teacher_not_human_truth",
+        "teacher_count": 0,
+        "student_count": 0,
+        "positive_reference_available": false,
+        "starts": {
+          "matched": 0,
+          "missing": 0,
+          "extra": 0,
+          "mean_error_seconds": null,
+          "max_error_seconds": null
+        },
+        "ends": {
+          "matched": 0,
+          "missing": 0,
+          "extra": 0,
+          "mean_error_seconds": null,
+          "max_error_seconds": null
+        },
+        "active_time_iou": 1.0,
+        "missed_teacher_active_seconds": 0.0,
+        "extra_active_seconds": 0.0,
+        "boundary_tolerance_seconds": 1.0
+      },
+      "unmatched_teacher_ends": []
+    },
+    {
+      "case": "held_clip2",
+      "teacher_file_sha256": "ed6030be736aa4c48f4ca2d434933e738af7e2b849ecdc51717440c578f05520",
+      "student_file_sha256": "ca87cbe38181abcf9495d0d00f1019ddab463cab22a51f47809a1007f7031881",
+      "duration": 303.266741,
+      "teacher_seconds": 224.3311887000018,
+      "fast_seconds": 75.75681320000149,
+      "speedup": 2.961201497583552,
+      "ratio": 0.24980257627393926,
+      "agreement": {
+        "reference_kind": "frozen_model_teacher_not_human_truth",
+        "teacher_count": 12,
+        "student_count": 11,
+        "positive_reference_available": true,
+        "starts": {
+          "matched": 11,
+          "missing": 1,
+          "extra": 0,
+          "mean_error_seconds": 0.24855184722392812,
+          "max_error_seconds": 0.6400861089368277
+        },
+        "ends": {
+          "matched": 11,
+          "missing": 1,
+          "extra": 0,
+          "mean_error_seconds": 0.12006973349098082,
+          "max_error_seconds": 0.3702712406607134
+        },
+        "active_time_iou": 0.9477611940298507,
+        "missed_teacher_active_seconds": 3.5,
+        "extra_active_seconds": 1.75,
+        "boundary_tolerance_seconds": 1.0
+      },
+      "unmatched_teacher_ends": [
+        {
+          "index": 5,
+          "start_seconds": 90.72491637699196,
+          "end_seconds": 91.86577432260829,
+          "evidence": "upstream pretrained TCN from low-rate CPU pose features; no label input",
+          "needs_review": true,
+          "duration_seconds": 1.1408579456163324
+        }
+      ]
+    }
+  ],
+  "weights": {
+    "model.onnx": "45f27d19a712ac1c53cd993046ba33645b1bd91a7a774be19f44b6201376b481",
+    "yolov8n-pose-960-dynamic.onnx": "4a3fe0de63042b3a48a458d4f4358615417b58c56471a6e1da53b249f5ec0011"
+  },
+  "case_scope": "Development and same-recording comparisons, not independent human accuracy",
+  "exclusions": {
+    "deemo2": "Excluded from future tests and scheme evaluation at owner request; history retained separately"
+  }
+}

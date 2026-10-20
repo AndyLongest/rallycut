@@ -1,0 +1,26 @@
+[
+  {
+    "method": "upstream_rallyclip_tcn_cpu",
+    "wall_seconds": 231.93738870000016,
+    "predicted_count": 12,
+    "matched_1s": 5,
+    "matched_2s": 8,
+    "matched_3s": 8
+  },
+  {
+    "method": "upstream_rallyclip_tcn_cpu_640",
+    "wall_seconds": 121.68440750000082,
+    "predicted_count": 10,
+    "matched_1s": 5,
+    "matched_2s": 7,
+    "matched_3s": 9
+  },
+  {
+    "method": "upstream_rallyclip_tcn_cpu_416",
+    "wall_seconds": 48.593640200000664,
+    "predicted_count": 12,
+    "matched_1s": 5,
+    "matched_2s": 8,
+    "matched_3s": 8
+  }
+]

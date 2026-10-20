@@ -1,0 +1,11 @@
+# Optional GPU runtime for the Windows x64 portable package, Python 3.12.
+# Install into runtime/gpu-site-packages with --no-deps; base dependencies
+# (numpy, protobuf, packaging, flatbuffers, etc.) are already in the CPU package.
+# Do not install these into runtime/site-packages alongside CPU onnxruntime.
+# See GPU_SETUP.md in the ZIP, or packaging/GPU_SETUP.md in the source project.
+onnxruntime-gpu==1.22.0
+nvidia-cuda-runtime-cu12==12.4.127
+nvidia-cublas-cu12==12.4.5.8
+nvidia-cudnn-cu12==9.1.0.70
+nvidia-cuda-nvrtc-cu12==12.4.127
+nvidia-cufft-cu12==11.2.1.3

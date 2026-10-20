@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171020">
+  <title>RallyCut · 每一个回合，都值得回看</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="RallyCut 首页">
+      <span class="brand-mark" aria-hidden="true"><i></i><b></b></span>
+      <span><strong>RallyCut</strong><small>NETCAST TENNIS · 回合工作台</small></span>
+    </a>
+    <div class="header-note"><span class="status-dot" id="connectionDot"></span><span id="connectionLabel">正在连接本机服务</span></div>
+    <button class="button top-upload" id="topUpload" type="button">＋ 添加视频</button>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-heading"><span>我的视频</span><span id="jobCount">0</span></div>
+      <button class="new-video" id="newVideo" type="button"><span>＋</span> 开始新分析 <b>↗</b></button>
+      <div id="jobList" class="job-list" aria-label="最近分析"></div>
+      <div id="historyEmpty" class="history-empty">分析过的视频会保存在这里，<br>下次打开可以继续回看。</div>
+      <div class="sidebar-foot"><span class="local-icon" aria-hidden="true">⌂</span><div><strong>留在你的电脑里</strong><p>视频和结果均保存在本地</p></div></div>
+    </aside>
+
+    <main class="main-content">
+      <div id="connectionError" class="alert error" role="status" hidden>本机服务暂时没有响应。请保持启动窗口开启，连接恢复后会自动继续。</div>
+      <section id="welcomeView" class="welcome-view">
+        <div class="hero">
+          <div class="court-decoration" aria-hidden="true"><i></i><b></b><span></span></div>
+          <span class="eyebrow"><i></i> 为每一次上场，留下精彩</span>
+          <h1>完整的比赛，<br><em>清晰的每一回合。</em></h1>
+          <p>放入一段网球视频，自动找出回合。<br>对照画面看识别结果，把想回看的片段带走。</p>
+          <div class="hero-features"><span>本地处理</span><span>GPU 优先 · CPU 自动回退</span><span>离线可用</span></div>
+        </div>
+        <div class="upload-card">
+          <div class="section-kicker">开始一次新分析</div>
+          <h2>选择你的网球视频</h2>
+          <div class="steps"><span class="active"><b>1</b> 选择视频</span><i></i><span><b>2</b> 自动识别</span><i></i><span><b>3</b> 回看与导出</span></div>
+          <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="选择或拖入网球视频">
+            <div class="upload-symbol" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 31V10m-8 8 8-8 8 8M11 29v8a3 3 0 0 0 3 3h20a3 3 0 0 0 3-3v-8"/></svg></div>
+            <strong>把视频拖到这里</strong>
+            <p>或者从电脑中选择文件</p>
+            <span class="button primary">选择视频 <span>↗</span></span>
+            <small id="formatHint">支持 MP4、MOV、MKV、AVI、WebM</small>
+          </div>
+          <div class="upload-tip"><span aria-hidden="true">⌗</span><p><strong>至少 20 秒 · 720p 或更清晰</strong>固定机位，尽量完整拍到球场和球员。</p></div>
+          <div class="upload-progress" id="uploadProgress" hidden>
+            <div><strong id="uploadName">正在导入视频</strong><span id="uploadPercent">0%</span></div>
+            <progress id="uploadBar" max="100" value="0">0%</progress>
+            <p id="uploadHint">正在复制到本地工作目录…</p>
+            <button class="text-button" id="cancelUpload" type="button">取消导入</button>
+          </div>
+          <p class="upload-error" id="uploadError" role="alert" hidden></p>
+        </div>
+      </section>
+
+      <section id="jobView" hidden>
+        <div class="page-heading">
+          <div class="page-heading-copy"><div class="section-kicker">你的回合分析</div><h1 id="jobTitle"></h1><p id="jobSubtitle"></p></div>
+          <div class="page-actions"><button class="button subtle danger" id="deleteJob" type="button">删除记录</button><button class="button" id="addVideo" type="button">＋ 添加视频</button></div>
+        </div>
+
+        <section class="processing-card" id="processingCard" aria-live="polite">
+          <div class="processing-art" aria-hidden="true"><div class="mini-court"><i></i><b></b><span></span></div><div class="orbit-ball"></div><span>RALLY BY RALLY.</span></div>
+          <div class="processing-copy">
+            <span class="section-kicker" id="phaseLabel">正在准备</span>
+            <h2 id="processingTitle">让每个回合，各归其位。</h2>
+            <p id="processingMessage">视频正在等待分析。</p>
+            <div class="progress-heading"><strong id="processingPercent">0<small>%</small></strong><span id="elapsedLabel"></span></div>
+            <progress id="processingBar" max="1" value="0">0%</progress>
+            <div class="processing-bottom"><span id="processingNote">处理会在本机进行，请保持启动窗口开启。</span><button id="cancelJob" class="text-button" type="button">取消分析</button></div>
+          </div>
+        </section>
+
+        <section class="empty-result" id="failedCard" hidden>
+          <div class="empty-icon" aria-hidden="true">!</div><h2 id="failedTitle">本次分析未完成</h2><p id="failedMessage"></p><button class="button primary" id="retryUpload" type="button">重新选择视频 ↗</button>
+        </section>
+
+        <div id="resultView" hidden>
+          <p id="deviceSummary" class="score-note"></p>
+          <div class="summary-grid">
+            <div><span>视频时长</span><strong id="durationMetric">—</strong></div>
+            <div><span>识别到的回合</span><strong id="rallyMetric">—</strong></div>
+            <div><span>回合总时长</span><strong id="activeMetric">—</strong></div>
+            <div><span>分析用时</span><strong id="analysisMetric">—</strong></div>
+          </div>
+          <div class="review-grid">
+            <section class="player-card">
+              <div class="panel-heading"><div><span class="section-kicker">与真实画面对照</span><h2>回看视频</h2></div><label class="switch-label"><input id="showPose" type="checkbox" checked><span class="switch"></span> 显示骨架</label></div>
+              <div class="video-stage" id="videoStage">
+                <video id="video" controls playsinline preload="metadata"></video>
+                <canvas id="poseCanvas" aria-label="模型实际检测到的人体骨架叠加"></canvas>
+                <div class="video-status" id="videoStatus">回合间隙</div>
+              </div>
+              <p class="media-error" id="mediaError" hidden>浏览器无法播放这段视频。分析结果仍可查看；可先下载回合片段，或将原视频转换为 H.264 MP4 后重试。</p>
+              <div class="playback-tools">
+                <div class="sample-controls"><button type="button" id="previousSample" title="上一个采样画面" aria-label="上一个采样画面">‹</button><button type="button" id="nextSample" title="下一个采样画面" aria-label="下一个采样画面">›</button><span>逐步看识别</span></div>
+                <span class="sample-label" id="sampleLabel">等待播放</span>
+                <label class="speed-label">速度 <select id="playbackSpeed" aria-label="播放速度"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+              </div>
+              <div class="pose-legend"><span><i class="near-dot"></i>近端骨架</span><span><i class="far-dot"></i>远端骨架</span><span id="poseStatus">未检测到的骨架不会补画</span></div>
+            </section>
+            <section class="rally-card">
+              <div class="panel-heading"><div><span class="section-kicker">片段清单</span><h2>每一回合 <span id="rallyCountBadge">0</span></h2></div><a id="downloadClips" class="icon-button" title="下载全部回合" aria-label="下载全部回合" href="#">↓</a></div>
+              <div class="rally-table-heading"><span>回合 / 时间</span><span>时长</span><span>下载</span></div>
+              <div id="rallyList" class="rally-list"></div>
+              <div id="noRallies" class="no-rallies" hidden>暂时没有识别到回合。<br>仍可通过下方时间轴查看模型分数。</div>
+              <div class="rally-footer">点击任一回合，从起点开始回看</div>
+            </section>
+          </div>
+          <section class="timeline-card">
+            <div class="panel-heading"><div><span class="section-kicker">把判断过程展开看</span><h2>回合与识别分数</h2></div><div class="timeline-tools"><span id="currentTime">00:00.0</span><label>视野 <select id="timeWindow" aria-label="时间轴显示范围"><option value="30" selected>30 秒</option><option value="60">60 秒</option><option value="0">完整视频</option></select></label></div></div>
+            <div class="timeline-key"><span><i class="point-dot"></i>回合内</span><span><i class="start-dot"></i>开始</span><span><i class="end-dot"></i>结束</span><span class="threshold-note">虚线为 0.5 参考线 · 点击时间轴跳转</span></div>
+            <canvas id="scoreCanvas" class="score-canvas" role="slider" tabindex="0" aria-label="识别分数时间轴，点击或按方向键跳转" aria-valuemin="0" aria-valuenow="0"></canvas>
+            <div class="overview-label"><span>完整视频</span><span>紫色区间为模型识别的回合</span></div>
+            <canvas id="overviewCanvas" class="overview-canvas" role="slider" tabindex="0" aria-label="完整视频回合时间轴，点击或按方向键跳转" aria-valuemin="0" aria-valuenow="0"></canvas>
+            <p class="score-note">分数表示模型对当前画面的判断倾向，不代表准确率。骨架只显示实际检测结果；回放和遮挡可能影响回合判断。</p>
+          </section>
+          <div class="result-footer"><p>先回看，再挑选。短回合也会保留，方便你自行判断。</p><a id="downloadJson" class="button" href="#" download>↓ 导出识别结果</a><a id="downloadAll" class="button primary" href="#" download>↓ 下载全部回合</a></div>
+        </div>
+      </section>
+      <footer class="app-footer"><span>RallyCut <span id="versionLabel"></span></span><span>每一个回合，都值得回看。</span></footer>
+    </main>
+  </div>
+  <input id="videoInput" type="file" accept="video/*,.mp4,.mov,.mkv,.avi,.webm,.m4v" hidden>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>

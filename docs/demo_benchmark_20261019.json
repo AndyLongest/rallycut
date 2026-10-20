@@ -1,0 +1,308 @@
+[
+  {
+    "fps": 1,
+    "width": 320,
+    "wall_seconds": 3.907154199998331,
+    "rallies": 4,
+    "cut_seconds": [
+      10.0,
+      37.0,
+      45.0
+    ],
+    "evaluation": {
+      "internal_boundaries": {
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1": 0.8571428571428571,
+        "matched": 3,
+        "predicted_count": 3,
+        "manual_count": 4,
+        "false_positives": 0,
+        "false_negatives": 1,
+        "tolerance_seconds": 1.0,
+        "mean_abs_error_seconds": 0.6666666666666666,
+        "predicted_seconds": [
+          10.0,
+          37.0,
+          45.0
+        ],
+        "manual_seconds": [
+          9.0,
+          17.0,
+          36.0,
+          45.0
+        ]
+      },
+      "segments": {
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.888888888888889,
+        "matched": 4,
+        "predicted_count": 4,
+        "manual_count": 5,
+        "false_positives": 0,
+        "false_negatives": 1,
+        "minimum_temporal_iou": 0.5,
+        "mean_matched_iou": 0.8731481481481481
+      },
+      "qualification": "Development clip only; no held-out accuracy claim"
+    }
+  },
+  {
+    "fps": 2,
+    "width": 320,
+    "wall_seconds": 3.975923900001362,
+    "rallies": 4,
+    "cut_seconds": [
+      9.5,
+      37.0,
+      45.0
+    ],
+    "evaluation": {
+      "internal_boundaries": {
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1": 0.8571428571428571,
+        "matched": 3,
+        "predicted_count": 3,
+        "manual_count": 4,
+        "false_positives": 0,
+        "false_negatives": 1,
+        "tolerance_seconds": 1.0,
+        "mean_abs_error_seconds": 0.5,
+        "predicted_seconds": [
+          9.5,
+          37.0,
+          45.0
+        ],
+        "manual_seconds": [
+          9.0,
+          17.0,
+          36.0,
+          45.0
+        ]
+      },
+      "segments": {
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.888888888888889,
+        "matched": 4,
+        "predicted_count": 4,
+        "manual_count": 5,
+        "false_positives": 0,
+        "false_negatives": 1,
+        "minimum_temporal_iou": 0.5,
+        "mean_matched_iou": 0.8817916002126528
+      },
+      "qualification": "Development clip only; no held-out accuracy claim"
+    }
+  },
+  {
+    "fps": 4,
+    "width": 160,
+    "wall_seconds": 4.315650399999868,
+    "rallies": 5,
+    "cut_seconds": [
+      9.75,
+      16.75,
+      36.75,
+      45.0
+    ],
+    "evaluation": {
+      "internal_boundaries": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "matched": 4,
+        "predicted_count": 4,
+        "manual_count": 4,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "tolerance_seconds": 1.0,
+        "mean_abs_error_seconds": 0.4375,
+        "predicted_seconds": [
+          9.75,
+          16.75,
+          36.75,
+          45.0
+        ],
+        "manual_seconds": [
+          9.0,
+          17.0,
+          36.0,
+          45.0
+        ]
+      },
+      "segments": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "matched": 5,
+        "predicted_count": 5,
+        "manual_count": 5,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "minimum_temporal_iou": 0.5,
+        "mean_matched_iou": 0.9329487179487179
+      },
+      "qualification": "Development clip only; no held-out accuracy claim"
+    }
+  },
+  {
+    "fps": 4,
+    "width": 320,
+    "wall_seconds": 4.327034099998855,
+    "rallies": 5,
+    "cut_seconds": [
+      9.75,
+      16.75,
+      36.75,
+      45.0
+    ],
+    "evaluation": {
+      "internal_boundaries": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "matched": 4,
+        "predicted_count": 4,
+        "manual_count": 4,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "tolerance_seconds": 1.0,
+        "mean_abs_error_seconds": 0.4375,
+        "predicted_seconds": [
+          9.75,
+          16.75,
+          36.75,
+          45.0
+        ],
+        "manual_seconds": [
+          9.0,
+          17.0,
+          36.0,
+          45.0
+        ]
+      },
+      "segments": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "matched": 5,
+        "predicted_count": 5,
+        "manual_count": 5,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "minimum_temporal_iou": 0.5,
+        "mean_matched_iou": 0.9329487179487179
+      },
+      "qualification": "Development clip only; no held-out accuracy claim"
+    }
+  },
+  {
+    "fps": 4,
+    "width": 480,
+    "wall_seconds": 4.7418079000017315,
+    "rallies": 5,
+    "cut_seconds": [
+      9.75,
+      16.75,
+      36.75,
+      45.0
+    ],
+    "evaluation": {
+      "internal_boundaries": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "matched": 4,
+        "predicted_count": 4,
+        "manual_count": 4,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "tolerance_seconds": 1.0,
+        "mean_abs_error_seconds": 0.4375,
+        "predicted_seconds": [
+          9.75,
+          16.75,
+          36.75,
+          45.0
+        ],
+        "manual_seconds": [
+          9.0,
+          17.0,
+          36.0,
+          45.0
+        ]
+      },
+      "segments": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "matched": 5,
+        "predicted_count": 5,
+        "manual_count": 5,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "minimum_temporal_iou": 0.5,
+        "mean_matched_iou": 0.9329487179487179
+      },
+      "qualification": "Development clip only; no held-out accuracy claim"
+    }
+  },
+  {
+    "fps": 8,
+    "width": 320,
+    "wall_seconds": 5.3821796999982325,
+    "rallies": 7,
+    "cut_seconds": [
+      9.75,
+      16.75,
+      18.0,
+      36.875,
+      39.0,
+      45.0
+    ],
+    "evaluation": {
+      "internal_boundaries": {
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8,
+        "matched": 4,
+        "predicted_count": 6,
+        "manual_count": 4,
+        "false_positives": 2,
+        "false_negatives": 0,
+        "tolerance_seconds": 1.0,
+        "mean_abs_error_seconds": 0.46875,
+        "predicted_seconds": [
+          9.75,
+          16.75,
+          18.0,
+          36.875,
+          39.0,
+          45.0
+        ],
+        "manual_seconds": [
+          9.0,
+          17.0,
+          36.0,
+          45.0
+        ]
+      },
+      "segments": {
+        "precision": 0.7142857142857143,
+        "recall": 1.0,
+        "f1": 0.8333333333333333,
+        "matched": 5,
+        "predicted_count": 7,
+        "manual_count": 5,
+        "false_positives": 2,
+        "false_negatives": 0,
+        "minimum_temporal_iou": 0.5,
+        "mean_matched_iou": 0.874080793420416
+      },
+      "qualification": "Development clip only; no held-out accuracy claim"
+    }
+  }
+]

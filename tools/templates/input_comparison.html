@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>416 与 960 · 模型输入画面对照</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f3f7;color:#251b30;font:15px/1.6 "Segoe UI","Microsoft YaHei",sans-serif}
+main{max-width:1440px;margin:auto;padding:28px}h1{font-size:30px;margin:6px 0}p{margin:6px 0;color:#74667f}.tag{font-size:12px;color:#8b42ee;letter-spacing:1px;font-weight:700}
+.top{display:flex;justify-content:space-between;align-items:center;gap:20px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:22px 0}
+button,a{font:inherit}button{cursor:pointer;padding:8px 18px;border:1px solid #dfd4e8;border-radius:10px;background:white;color:#564163}
+button.active{background:#251b30;border-color:#251b30;color:#c4f12c}button:focus-visible{outline:3px solid #8b42ee}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}.panel{background:white;border:1px solid #e9e0ef;border-radius:16px;overflow:hidden}
+.label{padding:14px 18px;display:flex;align-items:center;justify-content:space-between}.label strong{font-size:19px}.label small{color:#756482}
+.full{width:100%;display:block;cursor:crosshair;image-rendering:pixelated}.img-wrap{background:#171020;min-height:320px;display:flex;align-items:center}
+.help{font-size:13px;margin:12px 0 20px}a{color:#7b3ac0;text-decoration:none}
+.zoom-section{margin-top:25px}.zoom-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+h2{font-size:21px;margin:6px 0}.crop{width:100%;height:360px;display:block;background:#171020;image-rendering:pixelated}
+.crop-meta{padding:9px 18px;color:#766780;font-size:13px}.raw{margin-top:25px;padding:18px;border-radius:16px;background:#eee8f4;font-size:13px}
+.native-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}.native-scroll{overflow:auto;background:#29212f;margin-top:12px;padding:14px;min-height:300px}
+.native-scroll img{display:block;max-width:none;image-rendering:pixelated}.footer{font-size:12px;margin:20px 0;color:#8d7c97}
+@media(max-width:760px){main{padding:16px}.pair,.native-row{grid-template-columns:1fr}.top{display:block}h1{font-size:25px}.img-wrap{min-height:0}.crop{height:320px}.controls{margin:16px 0}}
+</style>
+<main>
+<div class="top"><div><div class="tag">RALLYCUT / 真实模型输入</div><h1>同一帧，416 和 960 究竟差多少？</h1>
+<p>取自之前前 35 秒漏识别的那段视频。左右画面来自同一帧、同一个姿态模型。</p></div><div class="tag">纯 CPU · 无锐化 · 无补细节</div></div>
+<div class="controls" id="frames"></div>
+<div class="pair">
+<div class="panel"><div class="label"><strong>轻量版 · 416</strong><small id="dims416"></small></div><div class="img-wrap"><img class="full" id="full416" alt="416版实际网络输入"></div></div>
+<div class="panel"><div class="label"><strong>完整版 · 960</strong><small id="dims960"></small></div><div class="img-wrap"><img class="full" id="full960" alt="960版实际网络输入"></div></div>
+</div>
+<p class="help">上面按同一宽度展示，保留实际灰色补边。<strong>点击任意一张图中的球员或球拍</strong>，下面同步放大左右相同位置。</p>
+<section class="zoom-section" id="cropSection">
+<div class="zoom-heading"><div><h2>同一区域，放大到一样大</h2><p id="cropHint">只把已有像素放大，不做图像增强。</p></div>
+<div class="controls"><button id="near" class="active">看近端球员</button><button id="far">看远端区域</button>
+<button id="small">更大放大</button></div></div>
+<div class="pair">
+<div class="panel"><div class="label"><strong>416 输入中的这块画面</strong></div><canvas class="crop" id="crop416"></canvas><div class="crop-meta" id="meta416"></div></div>
+<div class="panel"><div class="label"><strong>960 输入中的同一块画面</strong></div><canvas class="crop" id="crop960"></canvas><div class="crop-meta" id="meta960"></div></div>
+</div>
+</section>
+<details class="raw"><summary>查看原始像素尺寸 / 下载两张输入图</summary>
+<p>下面按 1 个图像像素 = 1 个 CSS 像素展示；大图可横向滚动。PNG 像素可精确还原本次送进网络的 RGB 输入。</p>
+<div class="native-row"><div><a id="download416" download>下载 416 原始输入 PNG ↗</a><div class="native-scroll"><img id="native416" alt="416原尺寸"></div></div>
+<div><a id="download960" download>下载 960 原始输入 PNG ↗</a><div class="native-scroll"><img id="native960" alt="960原尺寸"></div></div></div>
+</details>
+<p class="footer">展示的是姿态网络实际输入，不是时序模型的输入。时序模型接收骨架数值；这些图能说明细节差异，不能单凭肉眼确定漏切原因。<a href="audit.json">查看输入来源记录</a></p>
+</main>
+<script>
+const data=__INPUT_COMPARISON_DATA__;
+const by=id=>document.getElementById(id);let selected=0,center=[830,420],extent=200,images={},focus='near',generation=0;
+data.frames.forEach((row,i)=>{const b=document.createElement('button');b.textContent=row.timestamp_seconds.toFixed(1)+' 秒';b.onclick=()=>select(i);by('frames').append(b);});
+function refreshButtons(){[...by('frames').children].forEach((b,i)=>b.classList.toggle('active',i===selected));by('near').classList.toggle('active',focus==='near');by('far').classList.toggle('active',focus==='far');by('small').classList.toggle('active',extent===100);}
+async function select(i){selected=i;focus='near';center=data.frames[i].near_focus||[830,420];refreshButtons();const token=++generation;
+ const loaded=await Promise.all([416,960].map(size=>new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve([size,img]);img.onerror=reject;img.src=data.frames[i].inputs[size].png;})));
+ if(token!==generation)return;images=Object.fromEntries(loaded);
+ for(const size of [416,960]){const item=data.frames[i].inputs[size];by('full'+size).src=item.png;by('native'+size).src=item.png;by('download'+size).href=item.png;by('dims'+size).textContent=item.width+' × '+item.height+' 像素';}
+ draw();
+}
+function draw(){const row=data.frames[selected];if(!images[416]||!images[960])return;
+ for(const size of [416,960]){const meta=row.inputs[size],canvas=by('crop'+size),rect=canvas.getBoundingClientRect(),dpr=devicePixelRatio||1;canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);
+ const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#171020';ctx.fillRect(0,0,rect.width,rect.height);ctx.imageSmoothingEnabled=false;
+ const half=extent/2,cx=Math.max(half,Math.min(row.source_width-half,center[0])),cy=Math.max(half,Math.min(row.source_height-half,center[1]));
+ const sx=(cx-half)*meta.ratio+meta.pad_left,sy=(cy-half)*meta.ratio+meta.pad_top,span=extent*meta.ratio,side=Math.min(rect.width,rect.height);
+ ctx.drawImage(images[size],sx,sy,span,span,(rect.width-side)/2,(rect.height-side)/2,side,side);
+ by('meta'+size).textContent='这块区域在模型输入中约 '+span.toFixed(1)+' × '+span.toFixed(1)+' 像素；这里放大显示。';
+ }
+ by('cropHint').textContent='原视频同一块 '+extent+' × '+extent+' 区域 · '+data.frames[selected].timestamp_seconds.toFixed(1)+' 秒 · 不补细节';
+}
+for(const size of [416,960])by('full'+size).onclick=e=>{const rect=e.target.getBoundingClientRect(),m=data.frames[selected].inputs[size];center=[((e.clientX-rect.left)/rect.width*m.width-m.pad_left)/m.ratio,((e.clientY-rect.top)/rect.height*m.height-m.pad_top)/m.ratio];focus='custom';refreshButtons();draw();};
+by('near').onclick=()=>{focus='near';center=data.frames[selected].near_focus||[830,420];extent=200;refreshButtons();draw();};
+by('far').onclick=()=>{focus='far';center=[208,375];extent=100;refreshButtons();draw();};
+by('small').onclick=()=>{extent=extent===100?200:100;refreshButtons();draw();};
+new ResizeObserver(draw).observe(by('crop416'));select(0);
+</script>
+</html>

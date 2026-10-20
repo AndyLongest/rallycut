@@ -1,0 +1,128 @@
+<div id="rally-timeline-oct19">
+  <style>
+    #rally-timeline-oct19 {color:var(--foreground);background:transparent}
+    #rally-timeline-oct19 .legend {display:flex;flex-wrap:wrap;gap:8px 18px;margin:12px 0}
+    #rally-timeline-oct19 .legend span {display:inline-flex;align-items:center;gap:6px}
+    #rally-timeline-oct19 .legend i {display:inline-block;width:12px;height:12px;background:var(--viz-series-1);opacity:.45}
+    #rally-timeline-oct19 .legend .human {width:3px;background:var(--foreground);opacity:1}
+    #rally-timeline-oct19 .legend .extra {background:var(--viz-series-3);opacity:1;clip-path:polygon(0 20%,20% 0,50% 30%,80% 0,100% 20%,70% 50%,100% 80%,80% 100%,50% 70%,20% 100%,0 80%,30% 50%)}
+    #rally-timeline-oct19 .legend .fault {background:transparent;color:var(--foreground);width:auto;opacity:1;font-style:normal}
+    #rally-timeline-oct19 svg {display:block;width:100%;overflow:visible}
+    #rally-timeline-oct19 svg text {fill:var(--foreground);font-size:12px;font-weight:400}
+    #rally-timeline-oct19 .time-panel {margin:14px 0 22px}
+    #rally-timeline-oct19 .summary {margin:12px 0}
+    #rally-timeline-oct19 .table button {white-space:nowrap}
+    #rally-timeline-oct19 td {vertical-align:middle}
+    #rally-timeline-oct19 .extras {overflow-wrap:anywhere;margin:12px 0}
+  </style>
+  <h3>回合时间轴 · 模型与人工取样</h3>
+  <div class="text-small text-muted">demo3_clip1.mp4 · 4分59.6秒 · 人工仅标注结束时间 · 开发样本</div>
+  <div class="legend text-small" aria-label="图例">
+    <span><i class="human"></i>人工结束</span>
+    <span><i></i>模型预测区间</span>
+    <span><i class="extra"></i>模型结束未匹配（±2秒）</span>
+    <span><i class="fault">◇</i>发球失误（允许合并）</span>
+  </div>
+  <div class="time-panel"><div class="text-small">前半段 · 0:00—2:30</div><div data-chart="0"></div></div>
+  <div class="time-panel"><div class="text-small">后半段 · 2:30—4:59.6</div><div data-chart="1"></div></div>
+  <div class="viz-controls">
+    <label class="form-label" for="rally-method-oct19">查看逐项差异
+      <select class="form-select" id="rally-method-oct19">
+        <option value="cpu416">CPU 416 · 较快版本</option>
+        <option value="cpu640">CPU 640</option>
+        <option value="cpu960">CPU 960 · 原始版本</option>
+        <option value="gemini">Gemini · 原生视频</option>
+      </select>
+    </label>
+  </div>
+  <div class="summary tabular-nums" data-summary aria-live="polite"></div>
+  <div class="text-small text-muted">严格结束时间对照 · ±2秒 · 保留11个人工事件，未扣除发球失误</div>
+  <div class="table-responsive">
+    <table class="table table-sm"><thead><tr><th>人工结束</th><th>模型结束</th><th>差异</th></tr></thead><tbody data-rows></tbody></table>
+  </div>
+  <div class="extras text-small" data-extras></div>
+  <div class="text-small text-muted" data-selected aria-live="polite">选中人工结束：0:35 · 点击表中时间定位原视频</div>
+  <script>
+  (() => {
+    const root=document.getElementById('rally-timeline-oct19');
+    const data=__TIMELINE_DATA__;
+    const dropdown=root.querySelector('select');
+    const video=document.getElementById('raw-video');
+    function seek(t){video.currentTime=t;document.getElementById('video-position').textContent='已定位 '+fmt(t)+'，点击播放查看';video.scrollIntoView({behavior:'smooth',block:'nearest'})}
+    const panels=[root.querySelector('[data-chart="0"]'),root.querySelector('[data-chart="1"]')];
+    const state={method:'cpu416',event:0};
+    const ns='http://www.w3.org/2000/svg';
+    const fmt=(t,dec=0)=>{const value=Math.round(t*Math.pow(10,dec))/Math.pow(10,dec);const m=Math.floor(value/60);return m+':'+(value-m*60).toFixed(dec).padStart(dec?3+dec:2,'0')};
+    function node(tag,attrs={},label){const e=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,v);if(label!==undefined)e.textContent=label;return e}
+    function save(){try{localStorage.setItem('rallycut-demo3-timeline-v1',JSON.stringify({modelContent:{method:state.method},privateContent:{event:state.event}}))}catch{}}
+    function restore(s){if(!s)return;if(data.models.some(m=>m.id===s.modelContent?.method))state.method=s.modelContent.method;const i=s.privateContent?.event;if(Number.isInteger(i)&&i>=0&&i<data.events.length)state.event=i}
+    function drawPanel(container,index){
+      const width=Math.max(280,container.getBoundingClientRect().width),left=width<430?68:92,right=12;
+      const start=index?150:0,end=index?data.duration:150,height=280,span=end-start;
+      const x=t=>left+(t-start)/span*(width-left-right);
+      const svg=node('svg',{viewBox:`0 0 ${width} ${height}`,role:'img','aria-label':`${index?'后':'前'}半段，人工结束时间与四种模型预测区间对照`});
+      svg.append(node('title',{},'人工结束标记与模型预测区间；叉号表示结束时间未在±2秒内匹配人工标注'));
+      const plotTop=51,plotBottom=230;
+      const ticks=width<430?[start,start+60,start+120,end]:[start,start+30,start+60,start+90,start+120,end];
+      [...new Set(ticks.filter(t=>t<=end))].forEach((t,i,a)=>{
+        svg.append(node('line',{x1:x(t),x2:x(t),y1:plotTop,y2:plotBottom,stroke:'var(--border)','stroke-width':1}));
+        svg.append(node('text',{x:x(t),y:250,'text-anchor':i===0?'start':i===a.length-1?'end':'middle'},fmt(t,Number.isInteger(t)?0:1)));
+      });
+      svg.append(node('text',{x:width-right,y:274,'text-anchor':'end'},'视频时间（分:秒）'));
+      const selected=data.events[state.event].end_seconds;
+      if(selected>=start&&selected<=end)svg.append(node('line',{x1:x(selected),x2:x(selected),y1:15,y2:plotBottom,stroke:'var(--foreground)','stroke-width':1,'stroke-dasharray':'3 4',opacity:.6}));
+      const humanY=62;
+      svg.append(node('text',{x:left-10,y:humanY+4,'text-anchor':'end'},'人工'));
+      data.events.forEach((e,i)=>{
+        const t=e.end_seconds;if(t<start||t>end)return;
+        const label=(e.approximate?'≈':'')+fmt(t)+(e.serve_fault?'◇':'');
+        const pos=x(t),labelY=i%2?37:21;
+        svg.append(node('text',{x:Math.max(left+15,Math.min(width-right-15,pos)),y:labelY,'text-anchor':'middle'},label));
+        svg.append(node('line',{x1:pos,x2:pos,y1:labelY+5,y2:humanY-9,stroke:'var(--border)','stroke-width':1}));
+        const attrs={stroke:'var(--foreground)','stroke-width':2,fill:'var(--background)'};
+        if(e.serve_fault)svg.append(node('path',{d:`M ${pos} ${humanY-6} l 5 6 -5 6 -5 -6 Z`,...attrs}));
+        else svg.append(node('line',{x1:pos,x2:pos,y1:humanY-7,y2:humanY+7,stroke:'var(--foreground)','stroke-width':i===state.event?3:2}));
+      });
+      data.models.forEach((m,i)=>{
+        const y=99+i*39,active=m.id===state.method;
+        svg.append(node('text',{x:left-10,y:y+4,'text-anchor':'end','font-weight':active?500:400},m.name));
+        svg.append(node('line',{x1:left,x2:width-right,y1:y,y2:y,stroke:'var(--border)','stroke-width':1,opacity:.45}));
+        const matched=new Set(m.evaluation.matches.map(p=>p.prediction_index));
+        m.intervals.forEach(([a,b],j)=>{
+          if(b<start||a>end)return;
+          const xx=x(Math.max(a,start)),ww=x(Math.min(b,end))-xx;
+          const rect=node('rect',{x:xx,y:y-8,width:Math.max(.8,ww),height:16,fill:'var(--viz-series-1)',opacity:active ? 0.48 : 0.22,'data-tooltip':`${m.full} · ${fmt(a,1)}—${fmt(b,1)}`});svg.append(rect);
+          if(b>=start&&b<=end){
+            const p=x(b);
+            if(matched.has(j))svg.append(node('circle',{cx:p,cy:y,r:3,fill:'var(--viz-series-1)'}));
+            else svg.append(node('path',{d:`M ${p-3} ${y-4} L ${p+3} ${y+4} M ${p+3} ${y-4} L ${p-3} ${y+4}`,stroke:'var(--viz-series-3)','stroke-width':2,fill:'none'}));
+          }
+        });
+      });
+      container.replaceChildren(svg);
+    }
+    function render(){
+      dropdown.value=state.method;
+      panels.forEach(drawPanel);
+      const m=data.models.find(m=>m.id===state.method),ev=m.evaluation;
+      root.querySelector('[data-summary]').textContent=`${m.full} · ${m.intervals.length}段候选 · 结束匹配 ${ev.matched}/11 · 分析 ${m.seconds.toFixed(2)}秒`+(m.preparation?` ＋准备 ${m.preparation.toFixed(2)}秒`:'（本机CPU，2线程）');
+      const body=root.querySelector('[data-rows]');body.replaceChildren();
+      data.events.forEach((e,i)=>{
+        const pair=ev.matches.find(p=>p.manual_index===i),tr=document.createElement('tr');
+        const td=document.createElement('td'),button=document.createElement('button');button.type='button';button.className='btn btn-ghost';button.setAttribute('aria-pressed',String(i===state.event));button.textContent=(e.approximate?'≈':'')+fmt(e.end_seconds)+(e.serve_fault?' ◇':'');button.setAttribute('aria-label',`${fmt(e.end_seconds)} ${e.description}，定位时间轴`);button.onclick=()=>{state.event=i;render();save();seek(e.end_seconds)};td.append(button);tr.append(td);
+        const prediction=document.createElement('td'),diff=document.createElement('td');prediction.className='tabular-nums';diff.className='tabular-nums';
+        if(pair){const delta=pair.predicted_end_seconds-e.end_seconds;prediction.textContent=fmt(pair.predicted_end_seconds,2);diff.textContent=`${delta>=0?'晚':'早'} ${Math.abs(delta).toFixed(2)}秒`;}
+        else {prediction.textContent='未匹配';diff.textContent=e.serve_fault?'发球失误 · 可合并':'未在±2秒内检出';}
+        tr.append(prediction,diff);body.append(tr);
+      });
+      root.querySelector('[data-extras]').textContent=`未匹配的模型结束（${ev.unmatched_predicted_ends_seconds.length}个）：`+ev.unmatched_predicted_ends_seconds.map(t=>fmt(t,2)).join('、');
+      const e=data.events[state.event];root.querySelector('[data-selected]').textContent=`选中人工结束：${fmt(e.end_seconds)} · ${e.description}`;
+    }
+    dropdown.addEventListener('change',()=>{state.method=dropdown.value;render();save()});
+    try{restore(JSON.parse(localStorage.getItem('rallycut-demo3-timeline-v1')))}catch{}
+
+    if(typeof ResizeObserver==='function'){const resize=new ResizeObserver(()=>panels.forEach(drawPanel));panels.forEach(p=>resize.observe(p))}else{window.addEventListener('resize',()=>panels.forEach(drawPanel))}
+    render();
+  })();
+  </script>
+</div>

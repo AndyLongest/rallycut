@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RallyClip · 回合切分诊断</title>
+<style>
+:root{color-scheme:dark;--bg:#0a1018;--panel:#111c29;--line:#263548;--muted:#9dadbf;--text:#edf3fb;--point:#61b9ff;--start:#ddad64;--end:#f18fad;--near:#5be0cb;--far:#ffb456;--human:#d6b8ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;font-size:14px;line-height:1.6}main{max-width:1560px;margin:auto;padding:28px 28px 48px}
+h1{font-size:26px;letter-spacing:.02em;margin:4px 0 8px;font-weight:650}h2{font-size:17px;margin:0 0 12px;font-weight:600}p{margin:6px 0}.eyebrow{color:var(--near);letter-spacing:.12em;font-size:11px}.subtle,.muted{color:var(--muted)}header{margin-bottom:22px}.header-line{display:flex;justify-content:space-between;align-items:center;gap:16px}.badge{display:inline-block;border:1px solid #345144;background:#142b25;color:#8ee6c4;border-radius:100px;padding:4px 11px;font-size:12px;white-space:nowrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}.player-grid{display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:18px;align-items:start}.video-wrap{position:relative;background:#000;line-height:0}.video-wrap video{width:100%;height:auto;display:block;min-height:100px}.video-wrap canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.video-wrap:fullscreen{width:100vw;height:100vh}.video-wrap:fullscreen video{width:100%;height:100%;object-fit:contain}.video-error{position:absolute;inset:0;display:none;align-items:center;justify-content:center;padding:32px;text-align:center;line-height:1.6;color:#ffbdc7;background:#091018ee}.video-error.visible{display:flex}.controls{padding:12px 15px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}button,select{font:inherit;color:var(--text);background:#1c2b3c;border:1px solid #3a4e65;border-radius:7px;padding:6px 11px;cursor:pointer}button:hover,select:hover{background:#2a4057}button.primary{background:#2a5265;border-color:#457e93}.timecode{font:14px ui-monospace,Consolas,monospace;min-width:150px;margin-left:3px}select{padding:5px 8px}label{display:inline-flex;gap:6px;align-items:center;color:var(--muted)}input[type=checkbox]{accent-color:var(--near)}.control-spacer{flex:1}.pose-note{border-top:1px solid var(--line);padding:8px 15px;color:var(--muted);font-size:12px}.side{padding:17px}.side h2{margin-bottom:8px}.status{border-radius:8px;padding:9px 11px;margin:9px 0;background:#192a3b;color:#c6d8eb;font-weight:600}.status.active{color:#8ce8cd;background:#17372f}.key{display:flex;align-items:center;gap:6px}.swatch{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--swatch)}.score-row{display:grid;grid-template-columns:85px 1fr 42px;gap:7px;align-items:center;margin:10px 0;font-size:13px}.meter{height:5px;background:#233244;border-radius:5px;overflow:hidden}.meter i{height:100%;display:block;background:var(--swatch);width:0}.score-value{text-align:right;font-variant-numeric:tabular-nums}.divider{height:1px;background:var(--line);margin:16px 0}.pose-stat{font-size:12px;margin:7px 0}.pose-stat strong{font-size:13px}.hint{font-size:12px;color:var(--muted)}.near{color:var(--near)}.far{color:var(--far)}
+.chart-panel{margin-top:18px;padding:17px 19px 12px}.chart-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.chart-header h2{margin-bottom:3px}.legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12px;color:#c4d0e0}.chart{display:block;width:100%;height:278px;cursor:crosshair;touch-action:none}.timeline{height:114px}.chart-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.window-control{font-size:12px}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.metric{background:#12202d;border:1px solid var(--line);border-radius:10px;padding:12px 16px}.metric-value{font-size:24px;font-weight:650;font-variant-numeric:tabular-nums}.metric-title{color:var(--muted);font-size:12px}.tables{display:grid;grid-template-columns:1fr;gap:18px;margin-top:20px}.table-panel{padding:18px 19px}.table-scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;text-align:left;font-size:13px}th{color:var(--muted);font-weight:500;font-size:12px;white-space:nowrap}td,th{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}td:first-child,th:first-child{padding-left:0}td:last-child,th:last-child{padding-right:0}.event-row{cursor:pointer}.event-row:hover{background:#17293a}.event-row.selected{background:#1d354a}.event-time{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--human);font-weight:600}.event-time button{color:inherit;background:transparent;border:0;padding:0;text-align:left;font-weight:600}.event-time small{display:block;color:var(--muted);font-size:10px;font-weight:400;margin-top:2px}.event-description{min-width:150px;max-width:270px}.diagnosis{min-width:200px}.details{font-size:12px;color:var(--muted);max-width:650px;margin-top:3px}.match{white-space:nowrap;min-width:105px}.good{color:#8ce8cd}.warn{color:#ffc183}.note-box{background:#192536;border-left:3px solid #789ac1;padding:11px 14px;margin-top:14px;font-size:12px;color:#bacbde}.note-box ul{padding-left:18px;margin:0}.note-box li+li{margin-top:5px}.empty{padding:17px 0;color:var(--muted);font-size:13px}.error-box{border:1px solid #8c4e54;background:#3a2027;color:#ffd7dc;padding:20px;margin:20px;border-radius:10px}.footer{margin-top:22px;font-size:12px;color:#8093aa}a{color:#93c9f3}.source{font-family:Consolas,monospace;overflow-wrap:anywhere;font-size:11px}
+@media(max-width:1050px){main{padding:18px 16px 36px}.player-grid{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}.side .divider{display:none}.side>h2{grid-column:1/-1}.side .status{grid-column:1}.side .score-group{grid-column:1}.side .pose-group{grid-column:2;grid-row:2/5}.side>.hint{grid-column:1/-1}.metrics{gap:8px}.metric{padding:10px 12px}.metric-value{font-size:21px}}
+@media(max-width:600px){h1{font-size:22px}.header-line{align-items:flex-start}.badge{font-size:10px}.controls{padding:10px;gap:7px}.controls button{padding:6px 8px;font-size:12px}.timecode{min-width:130px;font-size:12px}.control-spacer{display:none}.metrics{grid-template-columns:1fr 1fr}.chart-panel,.table-panel{padding:13px 12px}.legend{gap:10px}.chart{height:265px}.timeline{height:114px}.side{display:block}.side .divider{display:block}.chart-foot span:last-child{display:none}.pose-note{font-size:11px}.event-description{min-width:130px}}
+</style>
+</head>
+<body>
+<main id="app">
+  <header>
+    <div class="header-line"><div><div class="eyebrow">RALLYCLIP / CPU DIAGNOSTICS</div><h1>找到回合在哪里被误切</h1></div><span class="badge">人工结束点 · 开发样本</span></div>
+    <p class="subtle">同步查看实际骨架、模型原始分数与最终切分。点击人工结束点，从前 3 秒开始检查。</p>
+  </header>
+  <section class="player-grid">
+    <div class="panel">
+      <div class="video-wrap" id="videoWrap">
+        <video id="video" preload="metadata" playsinline></video>
+        <canvas id="poseCanvas" aria-label="实际采样骨架叠加"></canvas>
+        <div id="videoError" class="video-error"></div>
+      </div>
+      <div class="controls">
+        <button id="playButton" class="primary" type="button">播放</button>
+        <button id="previousSample" type="button" title="暂停并跳到上一条实际采样">上一采样</button>
+        <button id="nextSample" type="button" title="暂停并跳到下一条实际采样">下一采样</button>
+        <span id="timecode" class="timecode">00:00.00 / 00:00.00</span>
+        <span class="control-spacer"></span>
+        <label>速度<select id="speed"><option value=".25">0.25×</option><option value=".5">0.5×</option><option value="1" selected>1×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+        <label><input id="showPose" type="checkbox" checked>骨架</label>
+        <button id="fullscreen" type="button">全屏</button>
+      </div>
+      <div class="pose-note" id="poseNote">正在读取采样信息…</div>
+    </div>
+    <aside class="panel side">
+      <h2>当前时刻</h2>
+      <div id="candidateStatus" class="status">读取最终候选…</div>
+      <div class="score-group">
+        <div class="score-row" style="--swatch:var(--point)"><span class="key"><i class="swatch"></i>回合中</span><span class="meter"><i id="pointMeter"></i></span><span class="score-value" id="pointValue">—</span></div>
+        <div class="score-row" style="--swatch:var(--start)"><span class="key"><i class="swatch"></i>开始</span><span class="meter"><i id="startMeter"></i></span><span class="score-value" id="startValue">—</span></div>
+        <div class="score-row" style="--swatch:var(--end)"><span class="key"><i class="swatch"></i>结束</span><span class="meter"><i id="endMeter"></i></span><span class="score-value" id="endValue">—</span></div>
+        <div class="hint" id="scoreTime">模型分数：暂无采样</div>
+      </div>
+      <div class="divider"></div>
+      <div class="pose-group">
+        <div class="pose-stat"><strong class="near">● 近端 · 模型分配</strong><div id="nearStat" class="muted">—</div></div>
+        <div class="pose-stat"><strong class="far">● 远端 · 模型分配</strong><div id="farStat" class="muted">—</div></div>
+        <p class="hint">连线仅显示置信度 ≥ 0.35 的关键点。这个显示阈值不影响模型推理；漏检处不补画骨架。</p>
+      </div>
+      <div class="divider"></div>
+      <p class="hint">“候选区间外”只表示算法没有选中，不能据此认定真实回合已经结束。</p>
+    </aside>
+  </section>
+  <section class="panel chart-panel">
+    <div class="chart-header">
+      <div><h2>播放位置附近的模型分数</h2><div class="legend"><span class="key" style="--swatch:var(--point)"><i class="swatch"></i>回合中</span><span class="key" style="--swatch:var(--start)"><i class="swatch"></i>开始</span><span class="key" style="--swatch:var(--end)"><i class="swatch"></i>结束</span><span class="key" style="--swatch:var(--human)"><i class="swatch"></i>人工结束点</span></div></div>
+      <label class="window-control">时间窗口<select id="windowSize"><option value="12">12 秒</option><option value="20" selected>20 秒</option><option value="40">40 秒</option></select></label>
+    </div>
+    <canvas id="scoreChart" class="chart" aria-label="当前时间窗口内三条模型分数与人工结束点，点击跳转"></canvas>
+    <div class="chart-foot"><span id="windowCaption">—</span><span>原始输出分数（窗口平均后、切分前）；虚线为回合中阈值。</span></div>
+  </section>
+  <section class="panel chart-panel">
+    <div class="chart-header"><h2>完整视频</h2><span class="hint">点击或拖动时间轴定位</span></div>
+    <canvas id="fullTimeline" class="chart timeline" aria-label="完整视频的候选区间和人工结束点，点击跳转"></canvas>
+    <div class="chart-foot"><span>青色横段：模型最终候选　紫色竖线：人工结束点</span><span>人工只标记结束，未补造开始时间或休息区间。</span></div>
+  </section>
+  <section id="metrics" class="metrics"></section>
+  <div id="summaryNotes" class="note-box" hidden></div>
+  <section class="tables">
+    <div class="panel table-panel">
+      <h2>逐个核对人工结束点</h2>
+      <p class="hint" id="eventTableNote"></p>
+      <div class="table-scroll"><table><thead><tr><th>人工结束</th><th>人工描述</th><th>预测结束匹配</th><th>诊断与证据</th></tr></thead><tbody id="eventRows"></tbody></table></div>
+      <div id="eventEmpty" class="empty" hidden>当前文件没有人工结束点。</div>
+    </div>
+    <div class="panel table-panel">
+      <h2>未匹配到人工标注的预测结束点</h2>
+      <p class="hint">这些点需要单独查看。“未匹配”本身不证明误检，也不能代替人工确认。</p>
+      <div class="table-scroll"><table><thead><tr><th>预测结束</th><th>对应候选区间</th><th>诊断与证据</th></tr></thead><tbody id="unmatchedRows"></tbody></table></div>
+      <div id="unmatchedEmpty" class="empty" hidden>当前文件没有列出未匹配预测。</div>
+    </div>
+  </section>
+  <footer class="footer"><div id="modelInfo"></div><div id="sourceInfo" class="source"></div><div>本页展示已有采样与预测；播放、拖动及显示骨架不会重新运行模型。</div></footer>
+</main>
+<script id="diagnosticData" type="application/json">__DIAGNOSTIC_DATA__</script>
+<script>
+"use strict";
+(() => {
+  const D = JSON.parse(document.getElementById("diagnosticData").textContent);
+  const $ = id => document.getElementById(id);
+  const finite = value => typeof value === "number" && Number.isFinite(value);
+  const clamp = (value, lower, upper) => Math.max(lower, Math.min(upper, value));
+  const duration = Number(D.video.duration_seconds);
+  const fps = finite(D.model?.fps) && D.model.fps > 0 ? D.model.fps : 5;
+  const threshold = finite(D.model?.threshold) ? D.model.threshold : 0.5;
+  const S = D.scores || {};
+  const times = Array.isArray(S.times) ? S.times : [];
+  const poses = (D.pose_samples || []).filter(p => finite(p.timestamp_seconds)).sort((a,b) => a.timestamp_seconds-b.timestamp_seconds);
+  const poseTimes = poses.map(p => p.timestamp_seconds);
+  const rallies = D.rallies || [];
+  const events = D.events || [];
+  const unmatched = D.unmatched_predictions || [];
+  const colors = {pointness:"#61b9ff",start:"#ddad64",end:"#f18fad",near:"#5be0cb",far:"#ffb456",human:"#d6b8ff",grid:"#29394c",muted:"#9dadbf"};
+  const skeleton = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
+  const video = $("video");
+  let windowSeconds = 20, lastPoseIndex = -2, lastPaint = -1, lastSideTime = -1;
+  let scoreRange = [0, Math.min(duration,windowSeconds)];
+  let selectedEvent = -1;
+  const axes = {left:70,right:18};
+  const clock = (seconds, decimals=1) => {
+    if (!finite(seconds)) return "—";
+    const scale = 10**decimals;
+    const safe = Math.round(Math.max(0,seconds)*scale)/scale;
+    const minutes = Math.floor(safe/60);
+    const remainder = safe-minutes*60;
+    return `${String(minutes).padStart(2,"0")}:${remainder.toFixed(decimals).padStart(decimals ? 3+decimals : 2,"0")}`;
+  };
+  function previousIndex(list,value) {
+    let low=0,high=list.length;
+    while(low<high) {const mid=(low+high)>>1;if(list[mid]<=value+1e-6)low=mid+1;else high=mid;}
+    return low-1;
+  }
+  function setText(id,text) { $(id).textContent=text; }
+  function canvasContext(canvas) {
+    const width=Math.max(1,canvas.clientWidth),height=Math.max(1,canvas.clientHeight);
+    const ratio=window.devicePixelRatio||1;
+    if(canvas.width!==Math.round(width*ratio)||canvas.height!==Math.round(height*ratio)) {
+      canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);
+    }
+    const ctx=canvas.getContext("2d");
+    ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,width,height);
+    ctx.font='11px "Microsoft YaHei",sans-serif';ctx.lineWidth=1;
+    return {ctx,width,height};
+  }
+  function currentPose(t) {
+    const index=previousIndex(poseTimes,t),sample=index>=0?poses[index]:null;
+    const age=sample?t-sample.timestamp_seconds:NaN;
+    const stale=sample && age>Math.max(0.4,1.5/fps);
+    return {index,sample,age,stale};
+  }
+  function playerStats(player) {
+    if(!player) return "未被选入特征";
+    const confidence=Array.isArray(player.conf)?player.conf:[];
+    const count=confidence.filter(value=>finite(value)&&value>=0.35).length;
+    const valid=confidence.filter(finite);
+    const mean=valid.length?valid.reduce((a,b)=>a+b,0)/valid.length:null;
+    const box=finite(player.box_conf)?`人体框 ${player.box_conf.toFixed(2)}`:"人体框置信度未知";
+    return `${count}/17 个点可见 · ${box}${mean===null?"":` · 关键点均值 ${mean.toFixed(2)}`}`;
+  }
+  function drawPlayer(ctx,player,label,color,sx,sy) {
+    if(!player)return;
+    const box=player.box||[];
+    if(box.length===4&&box.every(finite)) {
+      const x=box[0]*sx,y=box[1]*sy,w=(box[2]-box[0])*sx,h=(box[3]-box[1])*sy;
+      ctx.strokeStyle=color;ctx.lineWidth=1.7;ctx.strokeRect(x,y,w,h);
+      ctx.font='bold 12px "Microsoft YaHei",sans-serif';
+      const labelWidth=ctx.measureText(label).width+12;
+      const top=Math.max(0,y-23),left=clamp(x,0,Math.max(0,ctx.canvas.clientWidth-labelWidth));
+      ctx.fillStyle="#09131de8";ctx.fillRect(left,top,labelWidth,21);
+      ctx.fillStyle=color;ctx.fillText(label,left+6,top+15);
+    }
+    const points=player.keypoints||[],conf=player.conf||[];
+    const valid=i=>Array.isArray(points[i])&&points[i].length>=2&&points[i].slice(0,2).every(finite)&&finite(conf[i])&&conf[i]>=0.35;
+    ctx.lineWidth=2;ctx.strokeStyle=color;ctx.fillStyle=color;
+    for(const [a,b] of skeleton)if(valid(a)&&valid(b)){ctx.beginPath();ctx.moveTo(points[a][0]*sx,points[a][1]*sy);ctx.lineTo(points[b][0]*sx,points[b][1]*sy);ctx.stroke();}
+    for(let i=0;i<points.length;i++)if(valid(i)){ctx.beginPath();ctx.arc(points[i][0]*sx,points[i][1]*sy,2.8,0,Math.PI*2);ctx.fill();}
+  }
+  function drawPose(t) {
+    const {ctx,width,height}=canvasContext($("poseCanvas"));
+    const {index,sample,age,stale}=currentPose(t);
+    if($("showPose").checked&&sample&&!stale) {
+      const reference=sample.reference_size||[1280,720];
+      const ratio=(video.videoWidth||D.video.width||1280)/(video.videoHeight||D.video.height||720);
+      const contentWidth=Math.min(width,height*ratio),contentHeight=contentWidth/ratio;
+      const sx=contentWidth/reference[0],sy=contentHeight/reference[1];
+      ctx.save();ctx.translate((width-contentWidth)/2,(height-contentHeight)/2);
+      drawPlayer(ctx,sample.near,"近端 · 模型分配",colors.near,sx,sy);
+      drawPlayer(ctx,sample.far,"远端 · 模型分配",colors.far,sx,sy);
+      ctx.restore();
+    }
+    if(index!==lastPoseIndex||lastSideTime<0||Math.abs(t-lastSideTime)>0.08) {
+      const timing=sample?`实际样本 ${clock(sample.timestamp_seconds,2)} · 保持 ${Math.max(0,age).toFixed(2)} 秒${stale?" · 样本过旧，隐藏骨架":""}`:"当前时刻尚无骨架样本";
+      setText("poseNote",`姿态采样 ${fps} fps · ${timing} · 未插值`);
+      setText("nearStat",playerStats(sample?.near));
+      setText("farStat",playerStats(sample?.far));
+      lastPoseIndex=index;lastSideTime=t;
+    }
+  }
+  function updateSide(t) {
+    setText("timecode",`${clock(t,2)} / ${clock(duration,2)}`);
+    const scoreIndex=previousIndex(times,t);
+    for(const [key,prefix] of [["pointness","point"],["start","start"],["end","end"]]) {
+      const value=scoreIndex>=0?S[key]?.[scoreIndex]:null;
+      setText(`${prefix}Value`,finite(value)?value.toFixed(2):"—");
+      $(`${prefix}Meter`).style.width=finite(value)?`${clamp(value,0,1)*100}%`:"0";
+    }
+    setText("scoreTime",scoreIndex>=0?`分数采样时间 ${clock(times[scoreIndex],2)}`:"模型分数：暂无采样");
+    const candidate=rallies.findIndex(r=>t>=r.start_seconds&&t<r.end_seconds);
+    setText("candidateStatus",candidate>=0?`模型最终候选 #${candidate+1}`:"模型最终候选区间外");
+    $("candidateStatus").classList.toggle("active",candidate>=0);
+  }
+  function drawChart(t) {
+    const {ctx,width,height}=canvasContext($("scoreChart"));
+    const left=axes.left,right=width-axes.right,top=24,bottom=height-92;
+    const range=Math.min(windowSeconds,duration);
+    const a=clamp(t-range/2,0,Math.max(0,duration-range)),b=a+range;
+    scoreRange=[a,b];
+    const x=s=>left+(s-a)/range*(right-left),y=v=>bottom-v*(bottom-top);
+    ctx.textAlign="right";
+    for(const value of [0,0.5,1]) {
+      ctx.strokeStyle=colors.grid;ctx.beginPath();ctx.moveTo(left,y(value));ctx.lineTo(right,y(value));ctx.stroke();
+      ctx.fillStyle=colors.muted;ctx.fillText(value.toFixed(1),left-10,y(value)+4);
+    }
+    ctx.strokeStyle="#bbc9da80";ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(left,y(threshold));ctx.lineTo(right,y(threshold));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="#b9cadc";ctx.textAlign="left";ctx.fillText(`阈值 ${threshold.toFixed(2)}`,left+6,y(threshold)-5);
+    ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);ctx.clip();
+    for(const key of ["start","end","pointness"]) {
+      ctx.strokeStyle=colors[key];ctx.lineWidth=key==="pointness"?2.2:1.5;ctx.beginPath();let begun=false;
+      for(let i=Math.max(0,previousIndex(times,a));i<times.length&&times[i]<=b+1/fps;i++){
+        const value=S[key]?.[i];
+        if(!finite(value)){begun=false;continue;}
+        if(!begun){ctx.moveTo(x(times[i]),y(value));begun=true;}else ctx.lineTo(x(times[i]),y(value));
+      }ctx.stroke();
+    }
+    ctx.restore();ctx.lineWidth=1;
+    if(!times.length){ctx.fillStyle=colors.muted;ctx.textAlign="center";ctx.fillText("没有捕获模型分数", (left+right)/2,(top+bottom)/2);}
+    const candidateY=bottom+26,humanY=bottom+54;
+    ctx.textAlign="right";ctx.fillStyle=colors.muted;ctx.fillText("最终候选",left-10,candidateY+4);ctx.fillText("人工结束",left-10,humanY+4);
+    drawLanes(ctx,a,b,left,right,candidateY,humanY,12);
+    ctx.textAlign="left";ctx.fillStyle=colors.muted;ctx.fillText(clock(a),left,height-9);
+    ctx.textAlign="center";ctx.fillText(clock((a+b)/2),(left+right)/2,height-9);
+    ctx.textAlign="right";ctx.fillText(clock(b),right,height-9);
+    for(const event of events)if(event.end_seconds>=a&&event.end_seconds<=b) {
+      const xx=x(event.end_seconds);ctx.strokeStyle="#d6b8ff75";ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(xx,top);ctx.lineTo(xx,bottom+10);ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=colors.human;ctx.textAlign=xx>right-38?"right":xx<left+38?"left":"center";ctx.fillText(`${event.approximate?"≈":""}${clock(event.end_seconds,0)}`,xx,14);
+    }
+    drawPlayhead(ctx,x(t),top,height-22);
+    setText("windowCaption",`${clock(a)} — ${clock(b)} · 点击曲线跳转并暂停`);
+  }
+  function drawLanes(ctx,a,b,left,right,candidateY,humanY,barHeight) {
+    const x=s=>left+(s-a)/(b-a)*(right-left);
+    ctx.fillStyle="#213346";ctx.fillRect(left,candidateY-barHeight/2,right-left,barHeight);
+    for(const rally of rallies) {
+      const start=Math.max(a,rally.start_seconds),end=Math.min(b,rally.end_seconds);
+      if(end<=start)continue;
+      ctx.fillStyle="#52cdb5a8";ctx.fillRect(x(start),candidateY-barHeight/2,Math.max(1,x(end)-x(start)),barHeight);
+      if(rally.end_seconds>=a&&rally.end_seconds<=b) {
+        ctx.strokeStyle="#8fe8d3";ctx.beginPath();ctx.moveTo(x(rally.end_seconds),candidateY-barHeight/2-3);ctx.lineTo(x(rally.end_seconds),candidateY+barHeight/2+3);ctx.stroke();
+      }
+    }
+    ctx.strokeStyle="#25364a";ctx.beginPath();ctx.moveTo(left,humanY);ctx.lineTo(right,humanY);ctx.stroke();
+    for(const event of events)if(event.end_seconds>=a&&event.end_seconds<=b) {
+      const xx=x(event.end_seconds);ctx.strokeStyle=colors.human;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xx,humanY-8);ctx.lineTo(xx,humanY+8);ctx.stroke();
+      ctx.fillStyle=colors.human;ctx.beginPath();ctx.moveTo(xx,humanY-8);ctx.lineTo(xx-4,humanY-13);ctx.lineTo(xx+4,humanY-13);ctx.closePath();ctx.fill();
+    }ctx.lineWidth=1;
+  }
+  function drawPlayhead(ctx,x,top,bottom) {
+    ctx.strokeStyle="#edf3fb";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
+    ctx.fillStyle="#edf3fb";ctx.beginPath();ctx.moveTo(x,top+5);ctx.lineTo(x-4,top);ctx.lineTo(x+4,top);ctx.closePath();ctx.fill();ctx.lineWidth=1;
+  }
+  function drawTimeline(t) {
+    const {ctx,width,height}=canvasContext($("fullTimeline"));
+    const left=axes.left,right=width-axes.right;
+    ctx.textAlign="right";ctx.fillStyle=colors.muted;ctx.fillText("最终候选",left-10,33);ctx.fillText("人工结束",left-10,69);
+    drawLanes(ctx,0,duration,left,right,29,65,14);
+    const ticks=Math.max(2,Math.floor((right-left)/110));
+    for(let i=0;i<=ticks;i++) {
+      const time=i/ticks*duration,xx=left+i/ticks*(right-left);
+      ctx.fillStyle=colors.muted;ctx.textAlign=i===0?"left":i===ticks?"right":"center";ctx.fillText(clock(time,0),xx,height-6);
+    }
+    const [a,b]=scoreRange;
+    ctx.fillStyle="#ffffff08";ctx.fillRect(left+a/duration*(right-left),8,(b-a)/duration*(right-left),74);
+    drawPlayhead(ctx,left+clamp(t/duration,0,1)*(right-left),8,83);
+  }
+  function paint(force=false) {
+    const t=video.currentTime||0;
+    if(force||Math.abs(t-lastPaint)>0.025) {drawPose(t);updateSide(t);drawChart(t);drawTimeline(t);lastPaint=t;}
+  }
+  function seek(time,play=false) {
+    video.currentTime=clamp(time,0,Math.max(0,duration-0.001));
+    if(play)video.play().catch(()=>{});else video.pause();
+    paint(true);
+  }
+  function step(direction) {
+    const list=poseTimes.length?poseTimes:times;
+    if(!list.length){seek((video.currentTime||0)+direction/fps);return;}
+    let index=previousIndex(list,video.currentTime||0);
+    if(direction>0)index+=1;
+    else if(index>=0&&Math.abs(list[index]-video.currentTime)<0.01)index-=1;
+    seek(list[clamp(index,0,list.length-1)]);
+  }
+  function bindScrub(canvas,rangeProvider) {
+    let dragging=false;
+    let dragRange=null;
+    canvas.addEventListener("pointerdown",event=>{dragging=true;dragRange=rangeProvider().slice();canvas.setPointerCapture(event.pointerId);applyWithRange(event);});
+    const applyWithRange=event=>{
+      const rect=canvas.getBoundingClientRect(),[a,b]=dragRange||rangeProvider();
+      seek(a+clamp((event.clientX-rect.left-axes.left)/(rect.width-axes.left-axes.right),0,1)*(b-a));
+    };
+    canvas.addEventListener("pointermove",event=>{if(dragging)applyWithRange(event);});
+    canvas.addEventListener("pointerup",()=>{dragging=false;dragRange=null;});
+    canvas.addEventListener("pointercancel",()=>{dragging=false;dragRange=null;});
+    canvas.tabIndex=0;
+    canvas.addEventListener("keydown",event=>{if(event.key==="ArrowLeft"||event.key==="ArrowRight"){event.preventDefault();seek(video.currentTime+(event.key==="ArrowLeft"?-1:1));}});
+  }
+  function cell(row,className,text) {
+    const td=document.createElement("td");if(className)td.className=className;if(text!==undefined)td.textContent=text;row.append(td);return td;
+  }
+  function timeCell(row,time,onClick,approximate=false) {
+    const td=cell(row,"event-time"),button=document.createElement("button");
+    button.type="button";button.textContent=`${approximate?"≈ ":""}${clock(time)}`;button.title="从该时刻前 3 秒开始播放";
+    button.addEventListener("click",event=>{event.stopPropagation();onClick();});
+    td.append(button);
+    const helper=document.createElement("small");helper.textContent="前 3 秒开始播放";td.append(helper);
+  }
+  function addDetails(td,diagnosis,details) {
+    const title=document.createElement("div");title.textContent=diagnosis||"待检查";td.append(title);
+    if(details){const explanation=document.createElement("div");explanation.className="details";explanation.textContent=details;td.append(explanation);}
+  }
+  function buildTables() {
+    const tolerance=D.summary?.tolerance_seconds??2;
+    setText("eventTableNote",`匹配窗口 ±${tolerance} 秒；沿用原始人工结束点，保留发球失误。点击任意一行播放对应位置。`);
+    events.forEach((event,index)=>{
+      const tr=document.createElement("tr");tr.className="event-row";
+      const jump=()=>{selectedEvent=index;for(const [i,row] of Array.from($("eventRows").children).entries())row.classList.toggle("selected",i===selectedEvent);seek(event.end_seconds-3,true);};
+      tr.addEventListener("click",jump);
+      timeCell(tr,event.end_seconds,jump,!!event.approximate);
+      cell(tr,"event-description",`${event.description||"人工结束点"}${event.serve_fault?" · 发球失误":""}`);
+      const match=cell(tr,"match");
+      if(finite(event.matched_end_seconds)) {
+        match.classList.add("good");match.append(document.createTextNode(clock(event.matched_end_seconds)));
+        const detail=document.createElement("div");detail.className="details";
+        const error=finite(event.error_seconds)?event.error_seconds:event.matched_end_seconds-event.end_seconds;
+        detail.textContent=`偏差 ${error>=0?"+":""}${error.toFixed(2)} 秒`;match.append(detail);
+      }else {match.classList.add("warn");match.textContent="窗口内未匹配";}
+      addDetails(cell(tr,"diagnosis"),event.diagnosis,event.details);
+      $("eventRows").append(tr);
+    });
+    $("eventEmpty").hidden=events.length>0;
+    unmatched.forEach(event=>{
+      const tr=document.createElement("tr");tr.className="event-row";const jump=()=>seek(event.end_seconds-3,true);tr.addEventListener("click",jump);
+      timeCell(tr,event.end_seconds,jump);
+      cell(tr,"match",`${clock(event.start_seconds)} — ${clock(event.end_seconds)}`);
+      addDetails(cell(tr,"diagnosis"),event.diagnosis,event.details);$("unmatchedRows").append(tr);
+    });
+    $("unmatchedEmpty").hidden=unmatched.length>0;
+  }
+  function buildSummary() {
+    const summary=D.summary||{};
+    const count=finite(summary.sample_count)?summary.sample_count:poses.length;
+    const nearMissing=finite(summary.near_missing)?summary.near_missing:poses.filter(p=>!p.near).length;
+    const farMissing=finite(summary.far_missing)?summary.far_missing:poses.filter(p=>!p.far).length;
+    const metrics=[
+      [`${summary.matched_count??events.filter(e=>finite(e.matched_end_seconds)).length} / ${summary.manual_count??events.length}`,`人工结束点匹配（±${summary.tolerance_seconds??2} 秒）`],
+      [`${summary.predicted_count??rallies.length}`,"模型最终候选数量"],
+      [`${nearMissing} / ${count}`,"近端未选入特征的采样"],
+      [`${farMissing} / ${count}`,"远端未选入特征的采样"]
+    ];
+    for(const [value,label] of metrics) {
+      const box=document.createElement("div");box.className="metric";
+      const v=document.createElement("div");v.className="metric-value";v.textContent=value;
+      const l=document.createElement("div");l.className="metric-title";l.textContent=label;box.append(v,l);$("metrics").append(box);
+    }
+    const notes=summary.notes||[];
+    if(notes.length){$("summaryNotes").hidden=false;const ul=document.createElement("ul");for(const note of notes){const li=document.createElement("li");li.textContent=note;ul.append(li);}$("summaryNotes").append(ul);}
+    setText("modelInfo",`${D.model?.name||"RallyClip"} · 输入 ${D.model?.imgsz??"—"} · 姿态采样 ${fps} fps · 回合中阈值 ${threshold} · ${D.video.width??"—"} × ${D.video.height??"—"}`);
+    setText("sourceInfo",D.video.path);
+  }
+  video.src=D.video.url||D.video.path;
+  if(D.video.width&&D.video.height){video.width=D.video.width;video.height=D.video.height;}
+  video.addEventListener("loadedmetadata",()=>paint(true));
+  video.addEventListener("loadeddata",()=>paint(true));
+  video.addEventListener("timeupdate",()=>paint());
+  video.addEventListener("seeked",()=>paint(true));
+  video.addEventListener("play",()=>setText("playButton","暂停"));
+  video.addEventListener("pause",()=>setText("playButton","播放"));
+  video.addEventListener("ended",()=>{setText("playButton","播放");paint(true);});
+  video.addEventListener("error",()=>{setText("videoError","无法加载本地视频。请确认原视频仍在记录的路径，并使用支持本地 MP4 的浏览器打开此 HTML 文件。");$("videoError").classList.add("visible");});
+  $("playButton").addEventListener("click",()=>video.paused?video.play().catch(()=>{}):video.pause());
+  video.addEventListener("click",()=>video.paused?video.play().catch(()=>{}):video.pause());
+  $("previousSample").addEventListener("click",()=>step(-1));
+  $("nextSample").addEventListener("click",()=>step(1));
+  $("speed").addEventListener("change",()=>video.playbackRate=Number($("speed").value));
+  $("showPose").addEventListener("change",()=>paint(true));
+  $("windowSize").addEventListener("change",()=>{windowSeconds=Number($("windowSize").value);paint(true);});
+  $("fullscreen").addEventListener("click",()=>{$("videoWrap").requestFullscreen?.();});
+  document.addEventListener("fullscreenchange",()=>paint(true));
+  document.addEventListener("keydown",event=>{
+    if(["INPUT","SELECT","BUTTON"].includes(document.activeElement?.tagName))return;
+    if(event.code==="Space"){event.preventDefault();video.paused?video.play().catch(()=>{}):video.pause();}
+    if(event.key==="ArrowLeft"||event.key==="ArrowRight"){event.preventDefault();step(event.key==="ArrowLeft"?-1:1);}
+  });
+  bindScrub($("scoreChart"),()=>scoreRange);
+  bindScrub($("fullTimeline"),()=>[0,duration]);
+  new ResizeObserver(()=>paint(true)).observe($("videoWrap"));
+  window.addEventListener("resize",()=>paint(true));
+  buildSummary();buildTables();paint(true);
+  function animate(){if(!video.paused)paint();requestAnimationFrame(animate);}requestAnimationFrame(animate);
+}) ();
+</script>
+</body>
+</html>

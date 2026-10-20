@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "source": "human owner, chat 2026-10-19 Asia/Shanghai",
+  "video_name": "demo.mp4",
+  "status": "development labels, not an independent test set",
+  "timing_precision_seconds": 1.0,
+  "notes": "Owner reported consecutive end times 9,17,36,45,58. Starts inferred from 'immediately next rally'. Last reported end 58 is preserved; evaluation clips it to the probed video-stream duration (container/audio may be slightly longer).",
+  "rallies": [
+    {"start_seconds": 0, "end_seconds": 9},
+    {"start_seconds": 9, "end_seconds": 17},
+    {"start_seconds": 17, "end_seconds": 36},
+    {"start_seconds": 36, "end_seconds": 45},
+    {"start_seconds": 45, "end_seconds": 58}
+  ]
+}

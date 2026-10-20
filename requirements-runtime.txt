@@ -1,0 +1,15 @@
+# Validated CPU runtime for Python 3.12 x64. GPU is a separate optional extension.
+numpy==2.5.4
+scipy==1.18.1
+opencv-python-headless==4.14.0.94
+scenedetect==0.6.7.1
+click==8.2.1
+platformdirs==4.13.5
+tqdm==4.70.1
+onnxruntime==1.31.0
+av==19.0.1
+tomli==2.5.0
+flatbuffers==25.12.19
+packaging==26.3
+protobuf==7.36.2
+colorama==0.4.6

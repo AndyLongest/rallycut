@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rallycut"
+version = "0.2.0"
+description = "Independent CPU and sampled-VLM tennis rally segmentation experiments"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26,<3", "scipy>=1.11,<2", "opencv-python-headless>=4.10,<5", "scenedetect>=0.6.4,<0.7"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+gemini = ["google-genai>=1.40,<3"]
+tiny-ball = ["onnxruntime>=1.20,<2"]
+upstream-rallyclip = ["onnxruntime>=1.20,<2", "av>=14,<20", "tomli>=2", "flask>=3", "flask-cors>=4"]
+
+[project.scripts]
+rallycut = "rallycut.cli:main"
+rallycut-app = "rallycut.local_app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+rallycut = ["web/*.html", "web/*.css", "web/*.js", "web/*.svg"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "annotation_type": "rally_end_events",
+  "source": "human owner, chat 2026-10-19 Asia/Shanghai",
+  "video_name": "demo3_clip1.mp4",
+  "status": "development labels; starts not supplied; no independent test set",
+  "timing_precision_seconds": 1.0,
+  "notes": "Only end events were supplied. Do not infer the next start from the preceding end in this untrimmed recording. Serve faults are included as attempts. Approximate 1:50 is explicitly uncertain. Completeness has not been independently checked.",
+  "events": [
+    {"end_seconds": 35, "description": "回合结束，未注明原因"},
+    {"end_seconds": 51, "description": "回合结束，未注明原因"},
+    {"end_seconds": 64, "description": "发球下网", "serve_fault": true},
+    {"end_seconds": 83, "description": "出界"},
+    {"end_seconds": 110, "description": "约1分50秒，远端好球，近端未接到", "approximate": true},
+    {"end_seconds": 132, "description": "发球打网、出界", "serve_fault": true},
+    {"end_seconds": 169, "description": "近端回抽出界"},
+    {"end_seconds": 186, "description": "近端回球出界"},
+    {"end_seconds": 222, "description": "远端截击，近端未接到"},
+    {"end_seconds": 238, "description": "远端截击，近端未接到"},
+    {"end_seconds": 297, "description": "近端回球下网"}
+  ]
+}
