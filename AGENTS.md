@@ -249,3 +249,31 @@ overwrites modified existing assets. Runtime files remain ignored.
 The released Light ZIP is the previously verified full application, byte-for-byte
 unchanged. Fast v2 is delivered as source CLI, not silently inserted into its UI.
 See docs/DELIVERY_ACCEPTANCE.md for clean-environment and package evidence.
+
+## demo_cut diagnostic correction (2026-10-20)
+
+demo_cut.mp4 is720x404, rejected by the unmodified720p minimum. A separately
+labelled1284x720 upscale experiment produced0 final intervals in both full/fast.
+Do NOT infer pose failure or low pointness from those empty results: actual
+decode replay shows867/869 samples above0.5, one refined172.64s candidate,
+discarded by max_duration_sec=60 before merging. Full pose capture confirms
+raw people in836/869 samples, near selected802/869, far1/869; score arrays
+exactly reproduce the prior run. Far-player absence is real, but not established
+as the cause of continuous pointness. Raising the cap alone would retain one
+long interval, not recover internal rally boundaries. Evidence and actual
+pose/score review: outputs/demo_cut_visual_20261020/teacher_pose/.
+
+## Owner-authorized current visual union (2026-10-20)
+
+Owner confirms continuous hitting in demo_cut and explicitly requests union with
+edit detection again. New run_visual_union.ps1 / tools/run_visual_union.py uses
+current fast v2 or official full CPU, no audio. Restore only score runs dropped
+for exceeding the original60s limit after exact decoder replay verification,
+then fuse scene boundaries. Retain final fragments still over60s with review
+flags. Preserve standalone behavior and the already published Light ZIP.
+See docs/VISUAL_UNION_V2.md. demo_cut explicit720p upscale now yields4 candidates
+at0.299–30,30–96.5,96.5–140.5,140.5–172.940. All three edit candidates show
+position discontinuities in neighboring sampled frames; this is qualitative,
+not labelled accuracy. No threshold retuning.108 tests passed; separate42.57s
+fresh CPU2-thread smoke completed in29.951s. Keep cached phase sums distinct
+from new end-to-end timings and disclose the original404p limitation.

@@ -73,3 +73,16 @@ CLI 与 UI 的外层结构不能混用，公共部分为 `rallies` 及区间语�
 每个任务独立输出目录，记录输入文件哈希与算法配置；子进程成功退出后读完整 JSON。
 失败保留日志，不以空数组伪装成功。消费已知字段并允许附加字段，保存 schema_version。
 人工修订另存，保留模型原结果便于追溯。
+
+## 纯视觉并集 v2
+
+`run_visual_union.ps1` 输出到 `fused/rallies.json`：
+`method=boundary_union_cpu`、`pipeline_version=visual_union_v2`。
+`rallies` 仍是动作支持的开始/结束区间。`boundaries` 保留并集边界及来源；
+`timeline_segments` 为全视频分区，动作外区间不进入回合数组。
+`activity_recovery` 记录原始最终段数、恢复长段及原60秒上限。
+段级 `restored_long_activity` 表示来自恢复长段，
+`exceeds_original_duration_limit` 表示拆分后仍超原上限；均须复核。
+`timings.cached_rallyclip/cached_scenes` 指明是否显式复用，
+`current_invocation_analysis_seconds` 才是本次调用计时；
+复用时不要把旧阶段时间相加当作新端到端测速。
