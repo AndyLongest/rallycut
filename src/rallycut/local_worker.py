@@ -1,4 +1,4 @@
-"""Offline worker with automatic CUDA selection and CPU fallback.
+"""Offline fast visual + regional scene union, with automatic CUDA/CPU inference.
 
 The upstream model and decoder are used unchanged. Observers write the actual
 pose assignments and three probability tracks without changing yielded values.
@@ -497,12 +497,33 @@ def export_rallies(ffmpeg: str, media: Path, rallies: list[dict], job: Path,
         archive.writestr("rallies.json", json.dumps(rallies, ensure_ascii=False, indent=2))
 
 
+def combine_default_visual(prediction, capture, scenes, decoder):
+    """The frontend always exports the same regional union it displays."""
+    from .regional_scenes import validate_scene_profile
+    from .visual_union import recover_long_candidates, fuse_visual_activity
+    validate_scene_profile(scenes, "regional")
+    scores = {"timestamps": capture.times, "pointness": capture.tracks[0],
+              "start": capture.tracks[1], "end": capture.tracks[2]}
+    audit = {"config": capture.decode_config, "sample_count": capture.count,
+             "decoded_intervals": [[r["start_seconds"], r["end_seconds"]]
+                                   for r in prediction["rallies"]]}
+    activity = recover_long_candidates(prediction, scores, audit, decoder)
+    fused = fuse_visual_activity(activity, scenes)
+    fused["scene_profile"] = "regional"
+    fused["scene_detection"] = scenes["visual_stats"]
+    fused["limitations"].extend(scenes["limitations"])
+    rallies = [{**row, "id": index, "duration_seconds": row["end_seconds"]-row["start_seconds"]}
+               for index, row in enumerate(fused["rallies"], 1)]
+    return fused, rallies
+
+
 def run(root: Path, job: Path, video: Path, filename: str, progress: Progress) -> dict:
     started = time.perf_counter()
     progress.update("preparing", 0.01, "正在检查视频和本地模型。", force=True)
     source, artifact, manifest = find_assets(root)
     ffmpeg = find_media_tool(root, "ffmpeg")
     ffprobe = find_media_tool(root, "ffprobe")
+    os.environ["PATH"] = str(Path(ffmpeg).parent) + os.pathsep + os.environ.get("PATH", "")
     meta = inspect_video(ffprobe, video)
     source_meta = dict(meta)
     progress.total = meta["duration_seconds"]
@@ -519,16 +540,17 @@ def run(root: Path, job: Path, video: Path, filename: str, progress: Progress) -
         meta = inspect_video(ffprobe, media)
         progress.total = meta["duration_seconds"]
     sys.path.insert(0, str(source))
-    progress.update("analyzing", 0.12, "正在初始化完整 960 模型，优先使用 GPU。", force=True)
+    progress.update("analyzing", 0.12, "正在初始化画面识别与分区剪辑方案，优先使用 GPU。", force=True)
     capture = Capture(job, progress)
     analysis_started = time.perf_counter()
     with inference_runtime(progress, root) as runtime:
         from rallyclip_engine import run_analysis
         request = build_request(artifact, manifest, analysis_video, job, progress.total,
                                 device=runtime.requested_device)
-        with capture.installed():
+        from .fast_pose import cropped_pose, bounded_court
+        with cropped_pose(10, 256, 5) as acceleration, bounded_court(1) as court_audit, capture.installed():
             inference_result = run_analysis(request)
-    analysis_seconds = time.perf_counter() - analysis_started
+    pose_seconds = time.perf_counter() - analysis_started
     if capture.tracks is None or capture.count == 0:
         raise RuntimeError("没有生成有效分析结果。")
     if capture.last_timestamp is None or capture.last_timestamp < progress.total - 1:
@@ -545,6 +567,20 @@ def run(root: Path, job: Path, video: Path, filename: str, progress: Progress) -
     np.savez_compressed(job / "model_scores.npz", timestamps=capture.times,
                         pointness=capture.tracks[0], start=capture.tracks[1],
                         end=capture.tracks[2])
+    from .regional_scenes import analyze_regional_scenes
+    from infer import heatmap_decode
+    scene_meta = {"path": str(analysis_video.resolve()), "duration_seconds": progress.total,
+                  "width": meta["width"], "height": meta["height"], "native_fps": meta["fps"],
+                  "video_stream_index": meta["video_stream_index"]}
+    progress.update("scenes", .78, "正在检测局部剪辑变化，合并回合边界（CPU）。",
+                    progress.total, force=True)
+    scenes = analyze_regional_scenes(scene_meta, threads=THREADS)
+    prediction = {"video": scene_meta, "method": "experimental_rallyclip_visual_accelerated",
+                  "rallies": rallies, "wall_seconds": pose_seconds}
+    fused, rallies = combine_default_visual(prediction, capture, scenes, heatmap_decode)
+    atomic_json(job / "scene_result.json", scenes)
+    atomic_json(job / "union_result.json", fused)
+    analysis_seconds = time.perf_counter() - analysis_started
     export_started = time.perf_counter()
     export_rallies(ffmpeg, media, rallies, job, progress)
     poses, stride = capture.display_samples(playback_offset)
@@ -557,6 +593,13 @@ def run(root: Path, job: Path, video: Path, filename: str, progress: Progress) -
         "source_video": {key: source_meta[key] for key in
                          ("width", "height", "fps", "codec", "start_seconds", "rotation")},
         "rallies": rallies,
+        "method": "boundary_union_cpu", "pipeline_version": "visual_union_v2",
+        "scene_profile": "regional", "scene_detection": fused["scene_detection"],
+        "boundaries": fused["boundaries"], "timeline_segments": fused["timeline_segments"],
+        "activity_recovery": fused["activity_recovery"],
+        "analysis_timings": {"pose_seconds": pose_seconds,
+                             "scene_seconds": scenes["wall_seconds"],
+                             "fusion_seconds": fused["timings"]["fusion_seconds"]},
         "scores": {"timestamps": capture.times.tolist(),
                    "pointness": capture.tracks[0].tolist(),
                    "start": capture.tracks[1].tolist(), "end": capture.tracks[2].tolist()},
@@ -564,13 +607,14 @@ def run(root: Path, job: Path, video: Path, filename: str, progress: Progress) -
         "pose_total_samples": capture.count, "pose_display_stride": stride,
         "pose_missing": {"near": capture.missing_near, "far": capture.missing_far},
         "model": {
-            "name": "RallyClip v0.5.0 · 完整 960",
+            "name": "RallyClip 加速 v2 + 分区剪辑并集",
             "device": runtime.device, "device_policy": runtime.mode,
             "fallback_reason": runtime.fallback_reason,
             "threads": THREADS, "sample_fps": 5, "input_size": 960,
             "threshold": 0.5, "decode_config": capture.decode_config,
             "sessions": runtime.sessions, "weights_sha256": MODEL_HASHES,
-            "scene_splitting": False,
+            "scene_splitting": True, "scene_profile": "regional", "audio_used": False,
+            "acceleration": acceleration, "court_acceleration": court_audit,
             "torch_imported": "torch" in sys.modules,
             "ultralytics_imported": "ultralytics" in sys.modules,
         },
@@ -579,6 +623,8 @@ def run(root: Path, job: Path, video: Path, filename: str, progress: Progress) -
         "inference_source": "normalized_video" if normalized else "original_video",
         "pose_playback_offset_seconds": playback_offset,
         "notes": [
+            "默认使用纯视觉加速 v2 与全图/左右分区剪辑边界并集，未使用音频分析。",
+            "橙色剪辑边界是候选，快速移动、遮挡与进出画面可能误触发；超过60秒的活动也保留待复核。",
             "回合为模型候选结果，可播放复核；没有输入人工标注或在当前视频上训练。",
             "骨架为实际模型输入使用的近端/远端分配结果；缺失时不补造骨架。",
             "分数时间轴为模型的 5fps 名义网格；骨架时间戳来自实际视频帧。",

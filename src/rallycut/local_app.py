@@ -22,7 +22,7 @@ from urllib.request import Request, urlopen
 import uuid
 import webbrowser
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 MAX_UPLOAD_BYTES = 8 * 1024**3
 JOB_ID = re.compile(r"^[a-f0-9]{32}$")
 VIDEO_SUFFIXES = {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v", ".mts", ".m2ts", ".ts"}

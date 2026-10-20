@@ -8,7 +8,8 @@
 - **直接使用**：[下载 Windows Light 包](https://github.com/AndyLongest/rallycut/releases)。完整解压，双击 `Start.cmd`，浏览器上传视频；`Stop.cmd` 退出。CPU 环境、模型、FFmpeg 均在包内。GPU 依赖独立安装，见 [GPU_SETUP.md](packaging/GPU_SETUP.md)。
 - **技术接手**：先读 [技术交接与验收](docs/HANDOFF.md)，再看 [结果数据契约](docs/RESULT_CONTRACT.md)。
 - **开发运行**：安装 Python 3.12 x64 后，在项目目录执行 `.\setup.ps1`。配置 FFmpeg/ffprobe 或从 Light 包复制 `runtime/ffmpeg`，双击 `Start-Source.cmd`。
-- **加速版实验**：完成源码安装后执行下面的命令；加速版目前是独立 CLI，**尚未接入便携包前端**。
+- **默认前端方案（0.3.0）**：纯视觉加速 v2 + 分区剪辑检测 + 边界并集，无需手选。GPU 优先、CPU 回退；骨架、分数、剪辑切点和导出采用同一份结果。
+- **单路加速对照**：完成源码安装后执行下面的命令，不含剪辑并集。
 
 ```powershell
 .\run_fast_visual.ps1 -Video 'D:\training.mp4' -Output 'outputs\new_job'
@@ -18,13 +19,13 @@
 
 | | 完整版 | 纯视觉加速 v2 |
 |---|---|---|
-| 入口 | Light ZIP / `Start-Source.cmd` | `run_fast_visual.ps1` |
+| 入口 | `tools/benchmark_rallyclip.py`，历史0.2.0 ZIP | `run_fast_visual.ps1`；0.3.0前端在此基础上加入分区并集 |
 | 算法 | 官方 960 人体姿态 + TCN，5fps | 同一模型，定期全图找人，其余采样点在人附近裁图 |
 | 设备 | 可选 NVIDIA GPU，失败回退 CPU | 固定 CPU，默认两线程 |
 | 输出 | 时间段、骨架/分数、预览、MP4、JSON | 时间段 JSON/CSV、分数、耗时审计、复核页 |
 | 状态 | 当前完整模型参考版本，需人工复核 | 加速候选，仍需跨视频验证 |
 
-便携包主入口不使用声音判断回合，也不混入剪辑接缝检测。播放/导出视频可能保留原声，
+0.3.0前端主入口不使用声音判断回合，会加入分区剪辑候选。播放/导出视频可能保留原声，
 这与模型切分输入无关。早期音频、Gemini、旧并集等代码仅作历史实验保留，
 不要将 `run_video.ps1` / `analyze --mode hybrid` 当成本次交付入口。
 
@@ -45,7 +46,7 @@ PySceneDetect 剪辑候选；相邻异源边界在 1 秒内去重，保留来源
 片段保留并标记复核。查看 `outputs\union_job\fused\review.html`，
 视频上实时显示候选段与切点，`rallies.json` 为结果。
 **这是候选边界并集，不保证每处剪辑都是真实回合结束。** 不使用音频，
-不改变原模型权重；现有 Light ZIP 前端未更新。详见
+不改变原模型权重；0.3.0前端默认使用分区方案，历史0.2.0 ZIP保持原样。详见
 [并集实现与本次验证](docs/VISUAL_UNION_V2.md)。
 `-SceneProfile global` 为默认原全图检测；`regional` 保持相同阈值，
 额外检测左右下部70%区域，同一批抽帧共用一次视频解码，不增加人体模型。

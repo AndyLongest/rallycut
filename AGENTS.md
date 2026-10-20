@@ -292,3 +292,13 @@ now an opt-in source CLI profile: run_visual_union.ps1 -SceneProfile regional
 or --scene-profile regional. Keep global default and the published ZIP unchanged.
 Reuse one sampled decode for upstream full/left/right detectors, preserve regional
 provenance, reject cached profile mismatches. No fresh human accuracy claim.
+
+## Owner-authorized frontend union default (2026-10-20)
+
+Owner now explicitly requires the frontend default to use the agreed combined
+scheme. This supersedes earlier instructions to keep fast/regional union CLI-only.
+Version0.3.0 defaults to fastv2 + regional scene boundaries + union with overlong
+activity recovery. Retain automatic GPU/CPU runtime fallback for model inference;
+scene analysis and media export stay CPU. UI, JSON and MP4 must use the same fused
+intervals. Preserve original scores/poses and older jobs, and keep historical0.2
+release archives intact. New releases need a separate versioned archive.

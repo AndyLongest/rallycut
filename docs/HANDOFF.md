@@ -6,13 +6,13 @@
 不依赖其他工作区项目、云端账号或业务数据库。尚未部署业务服务器。
 当前完整版本与加速 v2 均保留；加速 v2 是流水线优化，没有新训练学生模型。
 
-Release 的 Windows Light ZIP 是已经验收过的完整模型应用 0.2.0；
-加速 v2 位于源码中，尚未接入该 ZIP 前端。不能把 ZIP 的耗时当成加速版耗时。
+0.3.0源码及对应新Light ZIP的前端默认采用加速v2 + 分区剪辑 + 边界并集。
+历史0.2.0 ZIP仍是完整模型单路，不会因仓库更新自动升级；两版耗时口径不同。
 源码标签 `v0.2.0-handoff.1` 表示交付快照，不表示重训模型。
 
 ## 给使用者：五步启动
 
-1. 从 Releases 下载 `RallyCut-Windows-x64-Light.zip`，完整解压到可写目录。
+1. 从 Releases 下载 `RallyCut-Windows-x64-Light-0.3.0.zip`，完整解压到可写目录。
 2. 双击 `Start.cmd`，浏览器自动打开；不需安装 Python/Node/FFmpeg。
 3. 上传至少 20 秒、720p 的视频。上限 8GiB；准备约原视频三倍加 512MiB 空间。
 4. 等待准备、分析、导出完成，查看骨架、分数、时间轴，复核后下载 JSON/MP4。
@@ -44,7 +44,7 @@ FFmpeg 准备任选其一：
 - 开发机自行安装带 libx264 的 FFmpeg，把 `ffmpeg` 和 `ffprobe` 放到 PATH。
   直接用 Python CLI 时可设 `$env:PATH="$PWD\runtime\ffmpeg\bin;$env:PATH"`。
 
-完整前端：双击 `Start-Source.cmd`。源码模式停止命令：
+默认并集前端：双击 `Start-Source.cmd`。源码模式停止命令：
 
 ```powershell
 .\.venv\Scripts\python.exe -m rallycut.local_app --stop
@@ -139,12 +139,12 @@ CPU 两线程设置不是严格两核资源隔离；业务服务器资源与并�
 新增的画面识别/剪辑并集使用 `run_visual_union.ps1`，详见
 [并集交付说明](VISUAL_UNION_V2.md)。固定机位人物跳变补漏可加
 `-SceneProfile regional`；默认 `global` 保留原整图方案。
-这两个模式目前是源码 CLI，尚未接入已发布 Light ZIP 前端。
+CLI仍允许global对照；0.3.0前端默认regional，历史0.2.0 ZIP未改写。
 新并集路径会恢复因超过60秒而被过滤的活动，最终长段也保留待复核；
 因此不能从原最终数组为空推断模型没有看到活动。
 
 先验收真实业务数据与 CPU 服务器，明确边界容差及短发球策略；再围绕全图重定位、
-裁图漂移、人物缺失与球场 mask 加诊断。加速达标后再接入 UI/任务队列，
+裁图漂移、人物缺失与球场 mask 加诊断。默认并集已接入 UI/任务队列，
 保留完整版用于对照。开发样本的 teacher 一致性不是人工准确率。
 deemo2 按负责人要求排除后续测试和方案评价，历史记录保留。
 

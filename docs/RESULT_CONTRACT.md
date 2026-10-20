@@ -64,6 +64,12 @@
 `clips.zip` 内的 `rallies.json` **仅为回合数组**，不是完整结果对象。
 CLI 与 UI 的外层结构不能混用，公共部分为 `rallies` 及区间语义。
 
+0.3.0前端默认使用加速v2 + regional并集。`rallies`保留边界来源和长段复核标记，
+下载JSON与MP4/ZIP按同一数组生成。新增`boundaries`、`timeline_segments`、
+`scene_profile`、`scene_detection`、`activity_recovery`与`analysis_timings`。
+`analysis_seconds`包含动作、剪辑和并集阶段；`model.acceleration`记录实际全图/
+裁图调用。模型分数仍是动作TCN原始输出，剪辑补充的边界不一定伴随分数下降。
+
 通常视频从 0 计时。非零/异常起始时间戳或旋转可能先归一化，须结合
 `source_video`、`input_normalized`、`inference_source` 理解，
 不能把结果秒数直接当成原容器的绝对 PTS。

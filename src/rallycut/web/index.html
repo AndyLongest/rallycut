@@ -35,7 +35,7 @@
           <div class="court-decoration" aria-hidden="true"><i></i><b></b><span></span></div>
           <span class="eyebrow"><i></i> 为每一次上场，留下精彩</span>
           <h1>完整的比赛，<br><em>清晰的每一回合。</em></h1>
-          <p>放入一段网球视频，自动找出回合。<br>对照画面看识别结果，把想回看的片段带走。</p>
+          <p>放入一段网球视频，结合打球动作与局部剪辑变化，自动切分回合。<br>对照画面看识别结果，把想回看的片段带走。</p>
           <div class="hero-features"><span>本地处理</span><span>GPU 优先 · CPU 自动回退</span><span>离线可用</span></div>
         </div>
         <div class="upload-card">
@@ -118,7 +118,7 @@
             <div class="panel-heading"><div><span class="section-kicker">把判断过程展开看</span><h2>回合与识别分数</h2></div><div class="timeline-tools"><span id="currentTime">00:00.0</span><label>视野 <select id="timeWindow" aria-label="时间轴显示范围"><option value="30" selected>30 秒</option><option value="60">60 秒</option><option value="0">完整视频</option></select></label></div></div>
             <div class="timeline-key"><span><i class="point-dot"></i>回合内</span><span><i class="start-dot"></i>开始</span><span><i class="end-dot"></i>结束</span><span class="threshold-note">虚线为 0.5 参考线 · 点击时间轴跳转</span></div>
             <canvas id="scoreCanvas" class="score-canvas" role="slider" tabindex="0" aria-label="识别分数时间轴，点击或按方向键跳转" aria-valuemin="0" aria-valuenow="0"></canvas>
-            <div class="overview-label"><span>完整视频</span><span>紫色区间为模型识别的回合</span></div>
+            <div class="overview-label"><span>完整视频</span><span>紫色：回合候选 · 橙线：剪辑候选</span></div>
             <canvas id="overviewCanvas" class="overview-canvas" role="slider" tabindex="0" aria-label="完整视频回合时间轴，点击或按方向键跳转" aria-valuemin="0" aria-valuenow="0"></canvas>
             <p class="score-note">分数表示模型对当前画面的判断倾向，不代表准确率。骨架只显示实际检测结果；回放和遮挡可能影响回合判断。</p>
           </section>

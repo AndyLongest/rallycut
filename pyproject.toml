@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rallycut"
-version = "0.2.0"
+version = "0.3.0"
 description = "Independent CPU and sampled-VLM tennis rally segmentation experiments"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.26,<3", "scipy>=1.11,<2", "opencv-python-headless>=4.10,<5", "scenedetect>=0.6.4,<0.7"]

@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 
 from rallycut.visual_union import recover_long_candidates, fuse_visual_activity
+from rallycut.local_worker import combine_default_visual
 
 
 @dataclass
@@ -48,6 +49,23 @@ def test_zero_final_results_recover_two_segments_even_if_both_exceed_old_cap():
     assert result["activity_recovery"]["original_final_candidates"] == 0
     assert result["boundaries"][1]["sources"] == ["PySceneDetect"]
     assert prediction == original
+
+
+def test_frontend_default_uses_regional_union_for_display_and_exports():
+    prediction, scores, metadata, decoder, scene = fixture()
+    scene["visual_stats"] = {"scene_profile": "regional"}
+    scene["limitations"] = ["regional candidates require review"]
+    capture = SimpleNamespace(times=scores["timestamps"],
+                              tracks=np.stack([scores[k] for k in ("pointness","start","end")]),
+                              count=len(scores["timestamps"]), decode_config=metadata["config"])
+    fused, exported = combine_default_visual(prediction, capture, scene, decoder)
+    assert len(exported) == 2  # original final prediction was empty
+    assert [r["id"] for r in exported] == [1,2]
+    assert exported[0]["end_sources"] == ["PySceneDetect"]
+    assert [r["duration_seconds"] for r in exported] == [90,82]
+    assert all(r["exceeds_original_duration_limit"] for r in exported)
+    assert fused["scene_profile"] == "regional"
+    assert fused["audio_used"] is False
 
 
 def test_scene_cut_without_score_activity_does_not_invent_a_rally():
